@@ -1,0 +1,97 @@
+phase_id: phase3.1
+slug: technical_sections_drafting_repair
+name: ieee_wcl_unified_technical_sections_repair
+variables:
+  - topic
+  - mathematical_contract_json
+  - issue_summary
+  - compile_log_tail
+  - current_system_model_problem_formulation_tex
+  - current_proposed_solution_tex
+output_schema:
+  required:
+    - system_model_problem_formulation_tex
+    - proposed_solution_tex
+    - proposed_section_title
+template: |
+  You are repairing a unified IEEE WCL technical-section preview.
+
+  Task:
+  Return valid JSON only with exactly these keys:
+  - system_model_problem_formulation_tex
+  - proposed_solution_tex
+  - proposed_section_title
+
+  Fix only the reported issue unless a local rewrite is required to preserve correctness.
+  The reported issue may be a content/technical-writing contract failure rather than a LaTeX compile failure. In that case, repair the local section only when the current inputs contain enough information; do not invent missing theory, experiments, or references.
+
+  Hard repair rules:
+  - Preserve the frozen mathematical interface; do not change the original optimizer, objective, constraints, notation, or algorithm flow.
+  - Do not introduce new physical design variables.
+  - Do not turn an unresolved theoretical placeholder into a confident theorem. If a concrete ambiguity set, counterpart, physical realization, or receiver-information assumption is absent from the current inputs, write scoped conservative/empirical language instead of fabricating details.
+  - Preserve smooth technical flow while repairing. Use restrained transitions such as "Moreover", "In addition", "Meanwhile", "While", "Therefore", "Consequently", "Accordingly", "To this end", "Given", and "With ... fixed" only where they clarify the relationship between paragraphs or equations.
+  - Do not add transition words as filler; each transition should express cause, contrast, continuation, or block-update dependency.
+  - Preserve common IEEE mathematical writing habits while repairing: formula lead-ins should explain how a displayed relation follows from the signal model, resource allocation, expectation, surrogate, or optimization objective.
+  - Prefer natural transitions such as "is given by", "can be written as", "is expressed as", "this yields", "we obtain", "we define", "we denote", "we formulate", "follows as", and "is modeled as" where they improve flow.
+  - Do not mechanically use the same phrase before every display; preserve natural flow and avoid tutorial-style expansion.
+  - When repairing a sentence that introduces two displayed relations, make the mapping explicit in IEEE style: put `\text{and}\quad` at the beginning of the second align line, end the second relation with a comma, and write `respectively.` immediately after the display. Do not leave a bare "define", "is given by", or "with the tight updates" before an `align` block containing unrelated definitions or updates.
+  - Use notation-defining prose such as "we denote ... by ...", "... is denoted by ...", and "where ... denotes ..." to define symbols near first use.
+  - Avoid dumping all variables in one paragraph; introduce symbols where they are used.
+  - Do not explain every equation after it is displayed; add post-equation interpretation only when it resolves a modeling ambiguity.
+  - Avoid tutorial-style exposition; write for a communications-theory reviewer, not for a beginner.
+  - The repaired System Model must read like restrained IEEE prose, not a tutorial and not an agent-generated list of equations.
+  - Avoid emphatic or AI-like adverbs and connectors such as "critically", "importantly", "specifically", "formally", and "central".
+  - Avoid meta-writing such as "this provides the quantities needed below" or "this exposes the tradeoff".
+  - Prefer short technical sentences over long explanatory clauses.
+  - Do not move reformulation-only or algorithmic variables into the System Model, the original Problem Formulation, or problem (P0). Symbols listed in mathematical_contract_json.reformulation_only may appear only in the proposed-method section as explicitly scoped algorithmic auxiliaries or reformulation variables.
+  - Do not duplicate definitions across the system/problem and proposed-method sections.
+  - Do not redisplay original KPI, response-metric, resource-metric, or original objective equations in the proposed-method section.
+  - Repair equation layout structurally with shorter notation and natural line breaks so the page remains balanced without manual spacing tweaks.
+  - Reserve `subequations` for optimization problems and algorithmic subproblems only. Do not preserve or introduce `subequations` for ordinary System Model definitions, channel models, uncertainty-set definitions, signal equations, KPI definitions, or hardware-response formulas.
+  - Each optimization objective/constraint line must contain only one primary equality/inequality relation. Move index ranges to `\forall` form or prose, e.g., define a pair set and write `\forall (n,m)\in\mathcal{E}` instead of appending `1\le n<m\le N` on the same constraint line.
+  - If the proposed-method opening repeats why problem (P0) is nonconvex or hard, rewrite it into a direct method transition such as `To solve problem (P0), we develop...`.
+  - If the issue summary reports overfull hbox warnings, fix them by splitting equations, introducing compact shorthands, or shortening algorithm lines. Do not use tiny fonts or `\resizebox` as the default fix.
+  - If a SINR, harvested-energy, utility, objective, or response metric is too long for one IEEE column, introduce a local unnumbered shorthand for the aggregate interference, received power, cost, or response term before the numbered main formula. Do not assign a separate equation number to a layout-only shorthand, and do not preserve an overfull fraction by merely moving source-code line breaks.
+  - For an overfull original objective, introduce a compact scalar objective shorthand in a standalone labeled equation before problem (P0), preferably `\psi(\cdot)` unless another symbol is already defined, then use the shorthand inside the `subequations` display. Downstream figure captions and numerical-results text must reuse this shorthand rather than inventing a new metric alias.
+  - For long optimizer or universal-domain lines, define compact notation in prose and place the long domain text in the introducing sentence rather than stretching the optimization display.
+  - The original optimization problem must retain numbered constraints using `subequations` plus `align`; refer to the full problem textually as problem (P0), not by `\eqref`.
+  - The problem-formulation part must begin with one compact explanatory paragraph stating what engineering decision is being made and what tradeoff or requirement it enforces.
+  - The formal problem must use a numbered optimization layout so that the objective and individual constraints are referenceable. Do not use `align*`, `equation*`, or an unnumbered display for problem (P0).
+  - Do not write objective and constraints as disconnected prose when they can be kept in the same formal problem display under the one-relation-per-line rule.
+  - After the display, explain the role of each constraint group in one concise paragraph and then state the dominant convexity/tractability status or technical difficulty.
+  - Do not claim a model is standard or obvious without defining the exact quantity used in this paper.
+  - Present every displayed inner optimization, surrogate subproblem, block update, scalar search, or algorithmic problem as a grouped problem using `subequations` plus `align` and a textual problem name such as `(P1)`.
+  - For inner optimization displays, give every actual objective or constraint line a stable `obj:*` or `con:*` label, and reserve `\nonumber` for continuation lines of the same expression.
+  - Do not use labels of the form `eq:p0_*`. Use `prob:p0` for the subequations wrapper, `con:p0_*` or `obj:p0_*` for objective/constraint lines, and ordinary labels such as `eq:utility_definition` for standalone definitions outside the optimization display.
+  - Do not introduce or preserve shorthand constraint references such as `C1`, `C2`, or `C1--C4` unless those exact tags are explicitly defined in the optimization display. Prefer "the constraints of problem (P0)" or the actual `\eqref{con:p0_*}` labels.
+  - The proposed-method section must include exactly one compact `algorithm[!t]` environment with label `alg:solution_proposed`.
+  - The algorithm block must be a compact paper-facing method skeleton, not a solver transcript.
+  - Repair the algorithm block to match the active method route already implied by the current technical content:
+    - direct exact/certified route: model-specific construction, counterpart assembly, solve, and KPI verification;
+    - iterative route: initialization, update order or loop, stopping, and final physical evaluation;
+    - relaxation-with-recovery route: relaxed solve, recovery/randomization, and post-recovery feasibility or KPI evaluation;
+    - heuristic route: candidate generation/update, acceptance or selection rule, and final best-feasible return.
+  - Prefer `\Require`, `\Ensure`, and 4-7 numbered `\State` lines; avoid `\Statex`, nested branching, and long expressions inside the algorithm block.
+  - If a direct-route algorithm block has collapsed into "assemble problem, solve, return", expand it into a real paper-facing procedure with at least one explicit model-specific construction step and one post-solve interpretation or verification step.
+  - Do not list generic solver internals such as primal/dual residual loops, phase-I embeddings, line-search details, PSD-preserving step sizes, residual/gap traces, or iteration counters unless they are the actual proposed contribution.
+  - Keep the post-algorithm scope/complexity discussion concise. Do not preserve generic solver-manual prose about residual loops, certificates, phase-I procedures, or line searches unless it is the actual contribution.
+  - For scalar resource-allocation updates, remove unsupported claims of convexity/concavity unless the current notes provide the proof. Prefer the scoped update type already stated by the algorithm notes, such as safeguarded search, closed-form update, or proxy update.
+  - Use only package-safe LaTeX supported by amsmath, amssymb, amsfonts, bm, mathtools, hyperref, algorithm, and algpseudocode.
+
+  Topic:
+  {topic}
+
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+
+  Issue summary:
+  {issue_summary}
+
+  Relevant compile-log tail:
+  {compile_log_tail}
+
+  Current system/problem LaTeX:
+  {current_system_model_problem_formulation_tex}
+
+  Current proposed-method LaTeX:
+  {current_proposed_solution_tex}

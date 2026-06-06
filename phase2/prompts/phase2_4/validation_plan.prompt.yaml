@@ -1,0 +1,166 @@
+phase_id: phase2.4
+slug: validation_plan
+name: validation_plan_yaml
+variables:
+  - topic
+  - handoff_final_title
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - convexity_audit_md
+  - reformulation_path_md
+  - phase24_evidence_contract_md
+output_schema:
+  required:
+    - validation_plan_yaml
+template: |
+  You are writing the Phase 2.4 executable experiment contract.
+
+  Return valid JSON only with exactly this key:
+  - validation_plan_yaml
+
+  Mission:
+  - Define the first executable experiment contract for the current paper.
+  - First-pass experiment-design principle: design the experiment plan as research evidence from the start, not as a smoke test that a later review pass must reinterpret.
+  - The plan must state which paper KPI, operating regime, parameter knob, and fair comparison will support the claimed contribution.
+  - Primary KPI alignment is mandatory: first identify the frozen optimization objective from the mathematical contract/problem formulation, then choose `research_evidence_contract.primary_metric` and the main figure y-metric as the corresponding paper-defined physical KPI. If the optimizer uses an auxiliary or epigraph objective, the main figure must report the equivalent physical quantity or a clearly defined physical alias from the current contract. Do not switch the main claim to a convenient secondary KPI unless that is the frozen objective or the stated contribution.
+  - Diagnostics such as feasibility, violation, runtime, and solver status are useful filters, but the primary figures should use paper-facing system-performance metrics unless the topic is explicitly feasibility-first.
+  - Create enough quick validation coverage to test whether the proposed method, benchmark family, metrics, and sweeps are runnable.
+  - Include at least one conservative low-stress canonical/scout regime where the proposed method is expected to be feasible. Quick validation should not consist mostly of infeasible stress points; stress/boundary behavior can be explored after a feasible operating region is established.
+  - Use a tiered experiment strategy: a scout pass with fewer x values but enough Monte Carlo seeds to identify reliable trends, then medium/paper passes with denser x values and paper-level Monte Carlo seeds for promoted figures.
+  - Prepare paper-quality reruns: smooth x-axes, repeated seeds, and a predeclared figure set that Phase 2.5 can analyze for data sufficiency without changing the experiment story after code is generated.
+  - Design the contract so the controller can automatically close the loop:
+    quick validation -> Phase 2.5 paper_sweep_plan -> Phase 2.4 paper sweep ->
+    Phase 2.5 re-analysis. Paper-mode sweeps must be executable from canonical
+    dotted paths, not prose-only suggestions.
+  - Keep the original problem and Phase 2.3 algorithm frozen.
+  - Treat WirelessBenchmarkAgent, ClaimOwner, and ExperimentDesignAgent content in the Phase 2.4 evidence-contract summary as frozen contracts.
+  - Success-first principle: design experiments that can demonstrate or falsify the actual paper contribution, not merely prove that code runs. The plan should make clear under what operating regimes the proposed mechanism is expected to help and which KPI reveals that help.
+
+  The YAML should be compact and executable. Include only:
+  - problem_family or topic_family
+  - objective_sense
+  - research_evidence_contract
+  - canonical_config
+  - sweep_definitions
+  - required_outputs
+  - semantic_guardrails
+
+  Hard schema requirements:
+  - Use `research_evidence_contract.figures`; do not use `figure_candidates`.
+  - Use `sweep_definitions[].id`; do not use `sweep_id`.
+  - Use `sweep_definitions[].canonical_path` as the executable dotted path into `canonical_config`; `variable` may be the paper notation only when `canonical_path` is also present. Do not use only `path`.
+  - Use `required_outputs.scalar_metrics` as a non-empty list of paper-facing physical KPIs and feasibility filters needed by figures and validation. Put runtime, solve time, iteration count, residuals, convergence gaps, and solver-status fields under diagnostics/optional diagnostics instead of making them required plotted metrics.
+  - Every figure must use `id`, `claim`, `chart_intent`, `required_sweep`, `y_metric`, and `methods_to_run`.
+  - Every `required_sweep` must exactly match one `sweep_definitions[].id`.
+  - Every sweep definition must include `scout_values`; line-plot sweeps should also include `medium_values` and `paper_values`.
+  - If a figure's trend requires a fixed operating regime different from the canonical case, encode it in the referenced sweep definition under `context_overrides` using executable dotted paths from `canonical_config`. Do not leave active-regime choices only in prose, captions, or `active_regime_note`.
+  - If a sweep changes one parameter that should move coupled parameters together, encode the coupling under `linked_paths` using executable dotted paths and `same_value` or a concrete value. Do not rely on generated code to infer hidden couplings from prose.
+
+  `research_evidence_contract` must include:
+  - primary_metric: name, display_name, and higher_is_better for the paper's main physical KPI/objective
+  - compared_methods
+  - required_result_columns
+  - figures: 2-3 executable figure candidates, each tied to one paper claim, one scalar sweep, one physical y-metric, and one intended insight
+  - final_display_policy: proposed_plus_same_selected_benchmark_set
+  - figure_display_contract
+  - two_pass_policy: scout_then_expand
+  - paper_sweep_policy with preferred_points and preferred_seeds_per_point
+
+  Every compared method must include:
+  - id
+  - role
+  - mandatory_status
+  - display_name_short
+  - display_name_long
+  - scientific_purpose
+  - implementation_hint
+  - fairness_rule
+
+  Practical-benchmark feasibility rules:
+  - If the frozen problem has hard feasibility constraints, every practical plotted benchmark must obey the same feasible set. A method that relaxes those constraints may be included only as an oracle/reference/diagnostic method and must not be the main practical benchmark for gain claims.
+  - Benchmark implementation hints must be derived from the frozen mathematical and algorithm contracts. Do not import a standard baseline family from another wireless problem unless it is explicitly justified by the current contracts.
+
+  Figure-design rules:
+  - The candidate pool should include at least one main physical-objective/KPI comparison and at least one complementary insight candidate: mechanism, robustness, feasibility boundary, stress regime, scalability, or convergence.
+  - Fig. 1 should normally be the objective-aligned performance comparison: its `y_metric` should match `research_evidence_contract.primary_metric.name`, and its claim should be an advantage claim only for the KPI optimized by the proposed method. Secondary system KPIs may appear only as complementary insight figures when they are defined by the current contracts.
+  - For auxiliary or epigraph objectives, do not hide the optimized physical quantity behind a generic `objective` column when a paper-facing physical metric is available. Use a descriptive metric name grounded in the current contract and keep `objective` as a numeric alias/diagnostic.
+  - Choose the main x-axis from parameters that directly drive the objective-equivalent KPI according to the current contracts. A service-threshold or constraint-threshold sweep is valid only when `context_overrides` make that threshold active enough to visibly move the objective KPI; otherwise it should be diagnostic or secondary, not Fig. 1.
+  - If the primary KPI is not a rate objective, do not introduce a rate-demand sweep as the main figure unless the current contracts define that relationship and the expected trend explains why the primary KPI will change.
+  - Phase 2.4 owns KPI, benchmark, sweep, and figure-story selection before code generation. Phase 2.5 may only analyze sufficiency, promote predeclared figures, request more seeds/x-points, or route back to Phase 2.4 design revision; it must not invent a new KPI, benchmark family, or paper story after results are seen.
+  - Each final paper figure should display the same selected plotted method set: the proposed method, the strongest credible feasible/practical benchmark, and optionally one informative ablation. Phase 2.4 may run several candidate benchmarks during quick validation, but extra methods should stay as audit/diagnostic data rather than crowded paper curves.
+  - The final plotted method set must be exactly identical across final figures: same ids, display names, colors, marker styles, and line styles.
+  - Do not mark every `compared_methods` entry as a final plotted method by default. If the policy is `proposed_plus_same_selected_benchmark_set` or `proposed_plus_one_best_practical_benchmark`, distinguish the candidate benchmark pool from the final plotted set: use candidate/audit method ids for alternatives that may be screened, and use `methods_to_run`/`figure_display_contract.selected_plotted_methods` only for the intended plotted set or for a clearly stated selection policy that Phase 2.5 can resolve consistently across both figures.
+  - If Phase 2.5 is allowed to select one common practical benchmark from the candidate pool after quick validation, state that policy explicitly in `final_display_policy` and do not later describe unselected candidate methods as mandatory final plotted curves.
+  - Evaluate fragile, infeasible, oracle, diagnostic, redundant, or mechanism-mismatched baselines internally, then classify them rather than plotting all of them. Do not hide a valid credible benchmark just because it beats the proposed method; if it beats the proposed method on the claimed KPI, mark the preview/claim as failed or recommend a redesigned regime.
+  - Prefer metrics that vary smoothly with the selected sweep, remain meaningful over feasible operating points, and can support or falsify the claim.
+  - Do not pair a constraint-threshold sweep with the constrained KPI itself unless the scout values are explicitly chosen to enter an active operating regime. The y-axis should usually be the paper objective or a contract-defined tradeoff KPI, not the raw constrained quantity or any feasibility/violation diagnostic.
+  - For model-shape or mechanism-parameter sweeps, prefer the paper objective or a primary system-performance KPI over raw mechanism outputs, raw violation, or raw feasibility diagnostics unless the current contracts make that raw mechanism output claim-critical.
+  - Each figure must include a short trend_hypothesis and active_regime_note explaining why the chosen y-metric should respond to the chosen sweep. If the expected trend depends on an active constraint, choose scout_values that enter that active regime instead of using only easy feasible values.
+  - Treat `active_regime_note` as an explanation, not an executable mechanism. Any fixed setting needed for that regime must appear in the sweep's `context_overrides` so the harness actually runs it.
+  - Do not choose a sweep unless the paper KPI is expected to vary under the declared `scout_values` and `context_overrides`. If the KPI would be physically flat under the canonical regime, choose a different operating regime or a different sweep before code generation.
+  - Each figure must include chart_choice_rationale and expected_trend fields. The expected trend should state what qualitative behavior would support the theory and what behavior would falsify or weaken the claim.
+  - Each figure must include axis_labels with paper-facing quantity names plus notation for x and y. Do not rely on Phase 2.5 to infer notation from internal schema paths.
+  - Final figures should be clean one-panel line plots whenever the x-axis is ordered. Do not use scatter for a one-dimensional ordered sweep; scatter is only for genuinely unordered point clouds, two-variable relationships, or distribution samples. Do not use a bar chart unless a categorical comparison is genuinely the best scientific visualization.
+  - Use simple markers only: circle (`o`) for the proposed method, square (`s`) for the strongest practical benchmark, and triangle (`^`) for the optional ablation. Do not use stars, diamonds, crosses, plus markers, oversized markers, caps, stems, or error-bar styling.
+  - Do not draw error bars or uncertainty bands in final preview/paper figures unless the user explicitly asks for uncertainty visualization. Store seed stability diagnostics in CSV/JSON only.
+  - Use concise paper-facing axis labels from the current paper's defined notation and physical meaning. Do not use bare symbols as complete axis labels.
+  - Do not expose internal canonical paths as display labels. Metadata may contain `canonical_path`, but `axis_labels`, `display_name`, captions, and prose-facing fields must use public notation explicitly defined by the current mathematical contract or figure metadata.
+  - Do not invent a new objective alias unless that exact symbol is explicitly defined by the System Model or Problem Formulation.
+  - Do not put "mean", "average", "over seeds", "standard error", or similar implementation/statistical-process language on figure axes, legends, or captions.
+  - Caption notes should follow concise IEEE reference-paper style: "[descriptive quantity] $symbol$ versus [descriptive x-axis parameter] $symbol$, where [essential fixed parameters]." Do not use bare symbols such as `$\psi$ versus $P_{\max}$`; keep trend interpretation, benchmark definitions, legend/style notes, preview status, and conclusions out of captions.
+  - Feasibility, violation, residual, runtime, solver status, and convergence may be diagnostics, but no final paper figure should use them as the y-axis. Claimed performance figures should use the paper objective or a paper-defined physical KPI from the current contracts.
+  - Do not choose transmit power as the primary plotted KPI merely because it is always reported or easy to compare. It must come from the frozen objective/primary_kpis and be justified as required-resource evidence. Otherwise use the paper-defined service/utility KPI and keep transmit power as a secondary resource diagnostic.
+  - If the frozen contract is a performance/utility maximization under a resource budget, do not switch the experiment story to resource minimization. The figures should report the defined objective-equivalent KPI that the paper optimizes.
+  - If the objective is resource minimization, choose x-axes that activate the contract-defined service or constraint regime. Do not make the main message a generic resource-saving statement unless it matches the frozen objective.
+  - Benchmark methods must be reproducible algorithms, not vague descriptions such as "fair scalar loading." For each plotted benchmark, include enough implementation detail that Phase 2.4 code can reproduce it and Phase 3 prose can define it in one itemized sentence.
+  - If robustness or reliability quantities appear in the model, include the corresponding diagnostics in required_outputs, but keep the plotted y-axis on a system-performance KPI unless the frozen objective is reliability-first.
+  - For performance curves under stress parameters, choose x-values inside an operating regime where the proposed and plotted benchmark are both usually feasible. Do not make a performance-vs-stress figure by averaging only the few feasible survivor seeds after most seeds become infeasible; if the stress boundary itself is the claim, use a boundary diagnostic figure instead.
+  - If the model already uses a symbol for one role, do not reuse that symbol for a different sweep role. Ensure the figure metadata/captions use symbols consistently with the current mathematical contract.
+  - The final paper figures must not use feasibility, violation, runtime, solver iterations, convergence gap, or other diagnostics as their y-axis. Use those diagnostics as required columns and claim filters while plotting the paper objective or another non-diagnostic system-performance KPI.
+  - Prefer Fig. 1 as the main performance sweep over a parameter that activates the paper objective. If the y-axis is a resource usage, do not use that same resource's upper bound/budget as the main x-axis, because the upper bound may be inactive and produce a flat curve. Use a contract-defined active operating-regime parameter instead.
+
+  Run-coverage rules:
+  - `methods_to_run` must use exact ids from `research_evidence_contract.compared_methods`.
+  - Every mandatory practical method from WirelessBenchmarkAgent must appear in `compared_methods`; if it cannot be executed, put the concrete reason under `future_required_experiments`.
+  - Sweeps must use exact canonical_config dotted paths in `canonical_path`. Use only paths actually present in the current `canonical_config`.
+  - Sweep-level `context_overrides` and `linked_paths` must also use exact canonical_config dotted paths. These fields are generic execution controls, not topic-specific hacks: use them only when a figure needs a scoped operating regime or coupled physical parameter to make the declared trend test meaningful.
+  - Phase 2.4 quick validation must finish in minutes, not hours. In `canonical_config.algorithm`, set `max_iterations` between 6 and 15 and any active/adversarial scenario counts between 4 and 16 for the scout pass.
+  - If the topic needs Monte Carlo/adversarial samples, keep quick validation samples small: `evaluation.adversarial_error_samples` must be between 4 and 16. Put larger values only in paper-mode policy fields for later controller-driven paper sweeps.
+  - Scout-mode values should be stored under `scout_values` and should cover representative low/mid/high operating points with 3-5 x values per sweep. Declare `scout_seeds_per_point` for the intended scout statistics; the Phase 2.4 quick harness may cap the seed count for runtime, while Phase 2.5 consumes the declared seed policy for scout/medium/paper sweeps.
+  - Keep the Phase 2.4 executable candidate pool compact: 2-3 figure candidates, no more than 4 active compared methods per figure, and no more than 3 scalar sweeps in quick validation.
+  - Paper-mode values should expand only the promoted figures to smooth curves with enough seeds per point. Seed repetition is for stabilizing the plotted curve and JSON diagnostics, not for drawing error bars.
+  - Paper-mode values should be smooth and publication-oriented: about 12 ordered x values for line/scatter figures, 5-6 meaningful categories for categorical figures, and 80-100 seeds per point by default.
+  - Required result columns must include method, seed, swept_param, swept_value, scenario_name, objective, feasible, and every metric needed by quick validation.
+  - Required metrics should be physical KPIs and feasibility diagnostics, not only a weighted objective.
+  - Runtime fields such as `runtime_s`, `solve_time_s`, or `solve_time_sec` are optional diagnostics. Do not put them in figure `required_metrics` or hard required result columns unless the frozen paper claim explicitly studies computational runtime.
+  - For communication-rate papers, prefer explicit physical metric names such as `weighted_sum_rate_bpsHz`, `sum_rate_bpsHz`, `min_user_rate_bpsHz`, or `throughput_bpsHz` rather than only `objective`; if using a paper symbol such as `R_wsr_bpsHz`, make sure required_result_columns includes it and it is clearly a rate KPI.
+  - Include actual-used diagnostics for swept paths when the path controls a derived quantity.
+  - Table targets are optional. For the current WARA route, use an empty table list unless a table is essential to a claim.
+
+  Compatibility:
+  - If the downstream harness still expects `paper_evidence_contract`, it may be included as an exact alias of `research_evidence_contract`. Do not make the two contracts disagree.
+
+  Topic:
+  {topic}
+
+  Inherited title:
+  {handoff_final_title}
+
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+
+  System model:
+  {system_model_md}
+
+  Problem formulation:
+  {problem_formulation_md}
+
+  Convexity audit:
+  {convexity_audit_md}
+
+  Reformulation path:
+  {reformulation_path_md}
+
+  Phase 2.4 evidence-contract summary:
+  {phase24_evidence_contract_md}

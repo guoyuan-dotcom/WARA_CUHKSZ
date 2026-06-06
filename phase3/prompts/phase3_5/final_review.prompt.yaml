@@ -1,0 +1,142 @@
+phase_id: phase3.5
+slug: final_review_pre_submission
+name: final_review
+variables:
+  - paper_target
+  - full_paper_tex
+  - review_facts_json
+  - technical_source_json
+  - result_source_json
+  - citation_source_json
+output_schema:
+  required:
+    - overall_score
+    - recommendation
+    - dimension_scores
+    - revision_plan
+template: |
+  You are acting as a final reviewer in phase3.5_final_review_pre_submission_review for a wireless optimization paper targeting {paper_target}.
+
+  Task:
+  Return valid JSON only. Do not return markdown fences. Do not rewrite the paper text. Review, diagnose, rank issues, and generate a revision plan.
+  Keep the JSON compact and complete. The reviewer should identify the highest-impact problems, not enumerate every minor imperfection. Long review prose causes truncation and prevents the controller from applying repairs.
+
+  Required top-level JSON keys:
+  - overall_score
+  - recommendation
+  - likely_reviewer_decision_estimate
+  - dimension_scores
+  - final_review_summary
+  - novelty_positioning_findings
+  - overclaim_warnings
+  - missing_related_work_warnings
+  - suggested_rewrite_targets
+  - theory_claim_reviews
+  - algorithm_clarity_issues
+  - undefined_symbols
+  - pseudo_code_vs_text_consistency
+  - claims_supported_by_experiments
+  - claims_not_sufficiently_supported
+  - suggested_additional_experiments
+  - citation_findings
+  - latex_format_findings
+  - writing_quality_issues
+  - consistency_issues
+  - critical_issues
+  - major_issues
+  - minor_issues
+  - reviewer_comments
+  - revision_plan
+  - paper_risk_matrix
+  - checklist_for_next_revision
+
+  General review rules:
+  - Be specific and actionable.
+  - Review like an IEEE/WCL reviewer plus a careful pre-submission checklist.
+  - Be strict about high-level IEEE writing quality. A section can be grammatically correct and still be unacceptable if it reads like generic template prose, a workflow report, or a checklist of artifacts rather than a research argument.
+  - Do not invent new theory, new experiments, or new references.
+  - Do not assume stronger evidence than what is provided.
+  - Use full_paper_abbreviation_check in Review facts as a dynamic paper-specific acronym inventory. Do not rely on a fixed acronym list; if a term is undefined in this exact draft, flag it and propose a first-use definition or removal.
+  - Acronym review is scoped: the abstract and main body are separate scopes. The abstract must define first uses inside the abstract, and the Introduction/body must define first body uses again; abstract definitions do not satisfy body first use.
+  - Also check repeated_abbreviation_definitions from full_paper_abbreviation_check. Repeated parenthetical definitions are invalid within the same scope. A benchmark item such as `full name (ABC): ... full name (ABC)` is a visible writing error; require one local definition only.
+  - Check high-level claims against final_figure_check and Experiment/result sources. Abstract, introduction, numerical-results prose, and conclusion must not name methods or baselines that are not present in the final plotted figures, unless explicitly framed as unplotted diagnostics.
+  - Treat any mathematical_contract_json inside Core technical sources as a frozen original-problem interface from Phase 2.1.
+  - Do not recommend auto-fixes that rewrite the original optimizer, objective, constraints, canonical notation, channels, receiver classes, or physical KPIs. If the frozen math is technically wrong, mark it as a manual theory-phase issue rather than a writing rewrite.
+  - Reformulation-only or implementation-only variables from later phases must not be pushed back into the original System Model or Problem Formulation during review.
+  - If a claim is too strong, recommend weakening or removing it.
+  - If a problem needs a new experiment, new proof, or manual reference verification, say so explicitly.
+  - Technical closure is a primary review dimension, not a polish detail. Apply it as a mechanism-agnostic chain: active modeling assumption -> mathematical expression -> tractability/proof scope -> physical implementation -> experiment evidence. Only review mechanisms that are actually present in this paper; do not import absent topic content from examples or older runs.
+  - Do not judge technical closure by keyword matching. First identify the active mechanism from the actual variables, signal/resource model, receiver/protocol assumptions, constraints, route policy, and plotted KPIs; then review only the closure obligations implied by those artifacts.
+  - Conditional examples of closure checks include: robust/chance/safe-conic steps define a concrete uncertainty or ambiguity model and deterministic counterpart; bilinear-looking conic epigraphs are expressed in solver-ready form; matrix-valued transmit controls have a physical signaling or recovery scope; auxiliary/common/service waveforms in receiver metrics have a receiver cancellation or no-decoding assumption; benchmark definitions are reproducible; and symbols such as outage tolerance and uncertainty radius are not overloaded.
+  - Check whether resource or transmit-power minimization is framed as minimum resource under meaningful QoS/reliability/service constraints rather than overclaimed as a contribution by itself.
+  - For writing review, check every section: abstract should state problem/gap/method/idea/evidence; Introduction should build a motivation-gap-contribution argument; technical sections should read as precise model/method exposition rather than a solver manual; Numerical Results should explain trend/mechanism/insight; Conclusion should state the scoped implication without notation-heavy restatement.
+
+  Dimension scores:
+  Provide a score from 0 to 10 for each of these dimensions:
+  - novelty_and_positioning
+  - technical_correctness
+  - theoretical_rigor
+  - algorithm_clarity
+  - experiment_strength
+  - reference_quality
+  - introduction_quality
+  - writing_quality
+  - IEEE_style_and_format
+  - reproducibility_and_consistency
+
+  Each dimension entry must contain:
+  - score
+  - brief_reason
+  - top_issues
+  - suggested_fix
+  Keep brief_reason and suggested_fix under 30 words each. top_issues should contain at most 3 short strings.
+
+  Issue format:
+  Every issue object in critical_issues, major_issues, minor_issues, and revision_plan.P0/P1/P2 must contain:
+  - issue_id
+  - title
+  - category
+  - issue
+  - why_it_matters
+  - exact_location
+  - suggested_action
+  - responsible_phase
+  - estimated_impact
+  - auto_fixable
+  - requires_new_experiment
+  - requires_reference_verification
+  - requires_manual_theory_verification
+  Limit critical_issues to at most 3 objects, major_issues to at most 6 objects, minor_issues to at most 6 objects, and each revision_plan priority list to at most 6 objects. Keep each field concise; do not write paragraph-length fields.
+
+  Reviewer simulation:
+  - Reviewer 1: technical/theory-focused
+  - Reviewer 2: experiments/results-focused
+  - Reviewer 3: writing/references/format-focused
+
+  Routing severity guidance:
+  - Author names, affiliations, anonymization choice, correspondence metadata, page-limit checks, and final template packaging are submission-preparation issues.
+  - Do not rank submission metadata as P0 unless the user has supplied final metadata and the draft contradicts it.
+  - If metadata is placeholder-like because user metadata is unavailable, list it as P2/manual packaging rather than a blocking research-content issue.
+  - Treat a raw lowercase user topic in \title{...}, instead of a polished IEEE-style title-case manuscript title, as a formatting/assembly defect that must be fixed before submission.
+
+  Claim-strength rules:
+  - Do not recommend using words such as proves, guarantees, globally optimal, statistically significant, or always superior unless the provided evidence explicitly supports them.
+  - If the paper only evaluates tested configurations, recommend wording such as:
+    - under the considered settings
+    - in the evaluated scenarios
+    - over the tested configurations
+
+  Current paper draft:
+  {full_paper_tex}
+
+  Review facts:
+  {review_facts_json}
+
+  Core technical sources:
+  {technical_source_json}
+
+  Experiment/result sources:
+  {result_source_json}
+
+  Citation/reference sources:
+  {citation_source_json}

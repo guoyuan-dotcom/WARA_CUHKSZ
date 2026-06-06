@@ -1,0 +1,115 @@
+phase_id: phase2.4
+slug: plugin_core_generation
+name: generated_experiment_core
+variables:
+  - topic
+  - mathematical_contract_json
+  - algorithm_md
+  - benchmark_definition_md
+  - phase24_execution_contract_md
+  - phase24_evidence_contract_md
+  - validation_plan_summary
+  - problem_data_contract_summary
+  - topic_specific_codegen_rules
+output_schema:
+  required:
+    - python_source
+template: |
+  You are writing a complete executable experiment core for this paper.
+
+  Return raw Python source only. Do not return JSON, markdown fences, or explanations.
+
+  Direct task:
+  - Implement the proposed algorithm from `Algorithm to implement`.
+  - Implement the required comparison methods from `Experiment requirements`.
+  - Run under the fixed Phase 2.4 harness by exporting the functions listed below.
+  - The produced validation data must support the requested paper figures: the declared y-metrics must vary with their declared sweeps, and proposed/baseline rows must be comparable.
+  - The produced metrics must implement the predeclared Phase 2.4 figure contract: a main performance sweep and a parameter-sensitivity/insight sweep using the same selected benchmark set.
+  - First-pass implementation quality matters: the initial code should already embody the research experiment design. Do not rely on later review to discover that the KPI, benchmark, parameter sweep, or proposed-method implementation is misaligned.
+
+  File boundary:
+  - Use the split generated-core architecture.
+  - Write only `generated_experiment_core.py`.
+  - Do not generate `problem_data.py`, `validation_cases.py`, `run_validation.py`, `generated_plugin.py`, serialization helpers, or framework files.
+  - The deterministic adapter imports your core and owns harness-facing model shape, operators, serialization, and framework glue.
+
+  Required exports:
+  - `build_model(problem, seed=0) -> dict`
+  - `initial_state(problem, model, seed=0) -> dict`
+  - `proposed_step(problem, model, state, iteration) -> dict`
+  - `baseline_solution(problem, model, seed=0) -> dict`
+  - `evaluate_state(problem, model, state) -> dict`
+  - `method_solution(problem, model, method, seed=0) -> dict` when the execution contract lists active method ids other than `proposed` and `baseline`
+  - These must be real top-level `def ...` functions inside `generated_experiment_core.py`; do not provide them only as nested helpers, lambdas, entries in `model["operators"]`, class methods, or adapter-side assumptions.
+  - If active method ids include any method besides `proposed` and `baseline`, `method_solution` is mandatory and must dispatch each exact active method id explicitly.
+
+  Coding priorities:
+  - Treat the Phase 2.4 benchmark/evidence contract as frozen execution input.
+  - Use `mathematical_contract_json` as the frozen original-problem interface; must not redefine original controls, constraints, parameters, or derived quantities.
+  - Parse all numeric values read from YAML/JSON defensively. Values such as `"inf"`, `"infinity"`, `"1e-4"`, `"30"`, or units-free numeric strings must be converted before arithmetic; use explicit helper functions instead of relying on implicit NumPy coercion.
+  - Sanitizer/projector helpers must be shape-safe. If a state value is scalar, empty, wrong-length, NaN, or infinite, convert it into a finite array of the requested shape by safe defaulting, truncation, tiling, or zero-fill before projection; do not allow `reshape` or matrix operations to crash quick validation.
+  - Before any matrix product or metric evaluation, ensure arrays that represent physical channels, beamformers, powers, trajectories, allocations, or covariance-like controls are finite. If a value represents an ideal limit such as continuous phase resolution, handle it as a branch in the algorithm rather than inserting infinity into matrices.
+  - Numerical runtime warnings are code-correctness failures, even when final metrics look finite. Before Gram matrices, quadratic forms, inverses, divisions, logarithms, normalizations, or `C.conj().T @ C`-style products, apply finite floors/caps and `np.nan_to_num` to the physical quantities that can become singular. Never let `np.inf`, NaN, zero denominators, or unbounded path-loss/inverse-gain values enter matrix products and then rely on clipping only at the metric-output layer.
+  - Read exact sweep paths and all configurable values through `problem.get("dotted.path", default)`, especially every `canonical_path` listed in `validation_plan_summary`; do not read only paper-symbol names such as `E_m^DC`, `gamma_k`, or `Gamma_s`.
+  - The same code will be reused by the controller for automatic paper sweeps after quick validation. Do not hard-code quick-mode x values, seed counts, or method subsets inside the solver; read the current `problem` fields so cloned paper-mode cases execute the same model with denser values.
+  - Respect the Phase 2.4 runtime budget: quick validation must complete in minutes. Use compact active scenario sets, vectorized NumPy operations, and metadata `max_iterations` from the validation plan; do not silently expand to hundreds of scenarios or dozens of heavy inner loops.
+  - Treat paper-sweep scalability as part of correctness. The same proposed method will be rerun for scout, medium, and paper Monte Carlo passes; a single proposed case should normally finish in seconds, not tens of seconds. Avoid nested CVXPY solves inside user/slot loops, avoid rebuilding identical subproblems every iteration, warm-start or reuse static matrices where possible, and keep any CVXPY subproblem compact enough for repeated sweeps.
+  - If the algorithm route requires CVXPY/SCA/BCD, implement a bounded paper-sweep version: one compact subproblem per block or per outer step, solver time limits/max iterations when available, and a small metadata-driven outer iteration count. Do not increase runtime to manufacture smoother figures; smoother curves come from more points/seeds after the quick solver is fast.
+  - If the validation plan contains large paper-mode sample counts, do not use them in Phase 2.4 quick validation. Use only canonical/scout settings read from the current `problem`.
+  - Do not call build_model from channel_from_state, project_state, evaluate_state, proposed_step, baseline_solution, method_solution, or their helpers.
+  - Implement one coherent physical model, one true objective/constraint evaluator, and use that same true objective for every method.
+  - Keep the objective-equivalent physical KPI explicit in the evaluator. If the
+    frozen objective is represented by an epigraph or auxiliary symbol, emit the
+    paper-facing physical KPI that equals that objective at evaluation time and
+    use `objective` only as an alias, not as a substitute for the named KPI.
+  - Implement the Technical Closure Plan rather than only its labels. Apply closure obligations only to mechanisms present in the current artifacts. If the algorithm requires a concrete uncertainty model, safe counterpart, physical realization/recovery path, or receiver-information assumption, encode that choice in the evaluator and diagnostics.
+  - Implement the proposed Phase 2.3 algorithm route, including WMMSE/SCA auxiliaries when declared: `receive_filter` or `mmse_receiver`, `mse_weight` / `mse_weights` or `eta_k`, and an iterative `proposed_step`.
+  - The proposed method must exercise the active controls and update blocks declared in the algorithm-to-code contract. `proposed_step` must update those controls or run the declared solver subproblem, and it must emit truthful diagnostics using current-paper variable names or contract-declared canonical aliases.
+  - Do not pass Phase 2.4 by returning a feasible but mechanism-dormant proposed state. If a benchmark-style initialization is needed for feasibility, use it as a starting point and then apply the proposed update; retain the best feasible proposed state under the true evaluator.
+  - If `Algorithm to implement`, `Execution contract`, or `Experiment requirements` declares SDP, SDR, SCA, CVX, CVXPY, semidefinite relaxation, convex subproblem, or rank recovery, the proposed method must include a real solver path using `cvxpy` (`import cvxpy as cp`, `cp.Variable`, `cp.Problem`, and `problem.solve(...)`). The Phase 2.4 execution check rejects candidate-search/proxy code for such algorithms.
+  - For nonlinear wireless models, implement a compact faithful convex subproblem: use conservative linearization, monotone inverse thresholds, or frozen-auxiliary SCA terms when needed, then evaluate all final KPIs with the original physical evaluator. Do not replace this with grid search, random candidate search, scalar scoring, or hard-coded trend shaping.
+  - If a full SDR/SCA implementation is too long, still implement the smallest honest CVXPY subproblem that matches the frozen algorithm route and constraints; do not mark the proposed method as `proxy`, `fallback`, `lightweight_candidate_search`, or `heuristic_proxy`.
+  - If an exact convex subproblem is too expensive for repeated paper sweeps, simplify the computational form without changing the stated objective or constraints: optimize active aggregate variables, use closed-form/projection updates for separable blocks, cache channel/geometry terms, and evaluate every returned state with the original physical evaluator. Do not silently switch to an unrelated proxy objective.
+  - Implement every exact execution id / active method id from `validation_plan_summary` in `method_solution`; return `state["method"]` with the exact id.
+  - `method_solution` must not map all unknown methods to baseline_solution or proposed_step with only a relabeled method id.
+  - Compute every required metric from the state/model; do not emit placeholder constants.
+  - Ensure metrics change when their declared sweep paths change, and emit `actual_used_<canonical_path_as_snake>` diagnostics for the declared sweep paths so the harness can verify sweep consumption.
+  - Prioritize the paper-defined system-performance KPIs declared in the frozen evidence contract over abstract diagnostics. Do not introduce metric families, physical quantities, constraints, or diagnostics from another wireless task unless they are explicitly present in the frozen mathematical, algorithm, or evidence contracts.
+  - Feasibility, violation, residual, runtime, solver status, and convergence are diagnostics; emit them for filtering and claim qualification, but do not use them as final paper figure y-axes.
+  - Implement all candidate benchmarks fairly, but do not make diagnostic/oracle/fragile methods masquerade as practical plotted baselines. Return enough diagnostic fields for downstream evidence analysis to classify methods as contract-aligned, diagnostic-only, invalid-for-claim, or redundant without changing the frozen plotted benchmark family.
+  - Benchmarks must be reproducible algorithms: no undefined "fair scalar loading", no relabeled proposed solution, and no arbitrary trend shaping. If a benchmark fixes a mechanism, optimize or evaluate the remaining controls under the same objective and constraints whenever possible.
+  - Different active method ids must correspond to genuinely different controls, assumptions, or disabled mechanisms. Do not implement two plotted benchmarks through the same helper with only a changed label; if two methods would be scientifically redundant, keep only the selected plotted method and leave the other as diagnostic/audit output.
+  - Emit any contract-declared robustness or boundary diagnostics as diagnostics, but keep them separate from the physical y-metrics used for paper figures unless the frozen objective is explicitly diagnostic-first.
+  - Keep method ids exact and stable so downstream figures can use the same plotted method set, labels, and styles in every final figure.
+  - Return JSON-normalizable states and finite scalar metrics.
+  - Do not copy `semantic_guardrails` or `forbidden_concepts` into Python source.
+  - Do not replace the proposed method with a generic proxy, fallback, or candidate-search-only routine.
+
+  Keep the code readable and complete. Prefer a clear 300-900 line implementation over an over-compressed clever one; correctness and contract faithfulness matter more than brevity.
+
+  Topic:
+  {topic}
+
+  Algorithm to implement:
+  {algorithm_md}
+
+  Experiment requirements:
+  {validation_plan_summary}
+
+  Comparison methods and benchmark notes:
+  {benchmark_definition_md}
+
+  Topic-specific code-generation guardrail:
+  {topic_specific_codegen_rules}
+
+  Phase 2.4 evidence contract:
+  {phase24_evidence_contract_md}
+
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+
+  Execution contract and acceptance checks:
+  {phase24_execution_contract_md}
+
+  ProblemData contract summary:
+  {problem_data_contract_summary}

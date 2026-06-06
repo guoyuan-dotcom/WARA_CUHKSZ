@@ -1,0 +1,86 @@
+phase_id: phase3.figure
+slug: paper_diagram_direct_image
+name: generic_paper_direct_image_prompt
+variables:
+  - diagram_type
+  - visible_nodes_text
+  - directed_links_text
+  - containers_text
+  - visual_priorities_text
+  - banned_additions_text
+  - caption_seed
+  - figure_environment
+  - float_placement
+  - latex_width
+  - insert_after
+output_schema:
+  required:
+    - raster_image
+template: |
+  Use case: scientific-educational
+  Asset type: IEEE wireless-communications letter system model figure, landscape PNG.
+
+  Primary request:
+  Draw one clean, polished system/scenario figure for the paper topic represented only by the structured graph below.
+  The image should resemble a recent IEEE wireless paper system model figure: physical network entities, wireless links, fronthaul/backhaul links, service clusters, and a small amount of text.
+
+  Paper integration contract:
+  - The final LaTeX wrapper will use \begin{{figure_environment}}[{float_placement}].
+  - The final image width in the paper will be {latex_width}.
+  - The figure will be inserted immediately after {insert_after}, before the System Model section.
+  - Compose the diagram as a centered landscape graphic with enough outer whitespace so all labels remain readable at {latex_width}.
+  - Do not place important labels at the extreme image border.
+
+  Generality rules for changing topics:
+  - This prompt must work for the current wireless-communications paper without assuming a previous topic family.
+  - Draw only the nodes, links, containers, branches, and labels listed below.
+  - Do not infer common wireless elements. Words such as transmitter, receiver, user, channel, antenna, RIS, UAV, relay, jammer, sensor, energy harvester, neural network, controller, or dataset may appear only if they are explicitly listed as visible labels below.
+  - If the diagram type is system_architecture or signal_flow, place the physical wireless deployment in the center and arrange control/fronthaul entities around it.
+  - If APs and users are listed, draw multiple AP icons and multiple user icons distributed over a service area. Show selected AP-user serving links with clear but light colored wireless strokes.
+  - If CPU/cloud/fronthaul is listed, draw a small cloud/server icon and wired fronthaul links from APs to the CPU/cloud.
+  - If the structured graph includes optimization or control nodes, draw them as one small controller badge near the CPU/cloud, not as a large algorithm flowchart.
+  - Avoid algorithm boxes unless the diagram type is explicitly algorithm_flow.
+
+  Visual style:
+  - Soft pastel colors: light blue, green, yellow, warm gray, and muted lavender accents.
+  - White or very light background.
+  - Use clean pictorial icons for APs, users, CPU/cloud, antennas, service regions, and links whenever those labels are present.
+  - Use small rounded labels only for essential entities.
+  - Use dashed translucent regions for user-centric clusters or service areas when containers are supplied.
+  - Use smooth wireless arcs or thin lines for serving links and thin wired lines for fronthaul/backhaul.
+  - Friendly academic infographic style, like a high-quality IEEE paper system model figure.
+  - Balanced spacing, readable labels, clean and uncluttered.
+  - The image should look publication-ready, not like a Matplotlib chart or a business workflow.
+
+  Hard fidelity and text rules:
+  - Use only the visible labels listed below, with exact English spelling.
+  - Keep all text horizontally readable.
+  - Do not include equations.
+  - Do not include a legend box.
+  - Do not add formulas, parameter lists, legends, reference text, title banners, captions, or watermarks inside the image.
+  - Do not draw math-variable labels or subscripted optimization variables unless such a label is explicitly listed below and is essential.
+  - Prefer unlabeled control/dependency arrows over math-variable edge labels.
+  - Do not include extra decorative hardware or background scenes.
+  - Do not include banned additions.
+  - Avoid long text labels. Prefer pictorial icons plus short labels such as AP, UE, CPU, Fronthaul, Serving link, and Cluster when listed.
+
+  Diagram type:
+  {diagram_type}
+
+  Visible nodes:
+  {visible_nodes_text}
+
+  Directed links:
+  {directed_links_text}
+
+  Containers:
+  {containers_text}
+
+  Visual priorities:
+  {visual_priorities_text}
+
+  Banned additions:
+  {banned_additions_text}
+
+  Caption meaning, not to be written inside the image:
+  {caption_seed}

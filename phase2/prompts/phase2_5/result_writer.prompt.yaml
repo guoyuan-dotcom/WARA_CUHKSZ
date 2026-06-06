@@ -1,0 +1,80 @@
+phase_id: phase2.5
+slug: experiment_planning
+name: experiment_summary_writer
+variables:
+  - topic
+  - algorithm_md
+  - benchmark_definition_md
+  - experiment_plan_json
+  - phase25_experiment_summary_json
+  - table_md
+  - figure_metadata_json
+  - missing_experiments_md
+template: |
+  You are writing the experiment summary section for an IEEE WCL-style wireless communications paper.
+
+  Task:
+  - Write concise markdown only.
+  - Explain the current 2-3 figures if they exist.
+  - If the data are insufficient, explicitly say the current figures are draft-only and list which paper-quality experiments still need to be run.
+  - Use only numbers that appear in the supplied deterministic summaries.
+  - Do not invent any new numerical result.
+  - Do not exaggerate the claims.
+  - If phase25_status is "needs_more_phase24_runs" or "claim_failure_needs_redesign", do not write as if the paper figures are final.
+  - If the current run is a scout pass, describe it as candidate screening and say which figures should be expanded before making final claims.
+  - If phase25_status is "claim_failure_needs_redesign", explicitly say the current proposed method does not yet support the intended claim and that the algorithm/experiment contract must be redesigned.
+  - If phase25_status is one of "paper_minimum_ready", "paper_preferred_ready", or "high_confidence_ready", do not call the figures draft-only.
+  - Treat `generated_figures_are_draft_only` and `missing_experiments_path` in the summary JSON as authoritative over any stale prose.
+  - If `missing_experiments_path` is empty, do not invent missing sweeps or claim that earlier quick-validation coverage is still missing.
+  - Use the compared_methods display_name_long on first mention, and display_name_short afterward.
+  - Do not refer to methods only as "proposed" or "baseline" without their defined names.
+  - Interpret each figure according to its chart_type.
+  - If a figure is a line chart, explain trends with respect to the x-axis.
+  - If a figure is a grouped bar/bar chart, explain differences across scenarios or categories.
+  - If a figure is a box plot, explain distribution, robustness, and spread.
+  - If a figure is a convergence plot, explain iterative behavior.
+  - If a figure is a heatmap, explain the performance regime over the two-dimensional grid.
+  - Do not default to "as x increases" language unless the chart is actually a line/scatter/convergence plot.
+  - Do not present draft-only figures as submission-ready evidence.
+  - The experiment section must be organized around claims:
+    1. setup and reproducibility protocol;
+    2. main comparison and what it demonstrates;
+    3. complementary mechanism/robustness/scalability evidence;
+    4. limitations and exact missing experiments if the data are not paper-ready.
+  - Do not require plotted error bars for the current WARA figure style. If seed-stability diagnostics are missing or insufficient, keep the claim scoped and recommend additional seeds in limitations rather than adding error-bar language to figure prose.
+  - Never introduce confidence-interval, standard-error, standard-deviation, IQR, uncertainty-band, cap, stem, or error-bar language for final figures unless the user explicitly requests such graphics.
+  - Do not put "mean", "average", "over seeds", "standard error", or similar statistical-process language into figure-facing prose or captions unless those exact phrases are already present in supplied final figure metadata and are scientifically necessary.
+  - Refer to axes using the paper-facing labels from the figure metadata, with concise physical meaning plus notation, such as `transmit power budget $P_{\max}$`, `rectifier turn-on offset $b$`, or `weighted utility $\psi$`. Do not reduce labels to bare symbols, and do not expand them into long textbook descriptions.
+  - If the figure metadata contains an objective alias that is not defined in the paper, describe it with the defined objective notation instead of repeating the alias.
+  - Captions should follow concise IEEE reference-paper style: one sentence of the form "[descriptive quantity] $symbol$ versus [descriptive x-axis parameter] $symbol$, where [essential fixed parameters]." Do not use bare symbols such as `$\psi$ versus $P_{\max}$`, and do not place trend explanations, method definitions, legend/style notes, preview status, or claim language in captions.
+  - The two final figures should be described as using the same selected plotted method set unless the supplied experiment plan explicitly says otherwise.
+
+  Write a short WCL-style summary with:
+  - one paragraph on the experimental setup logic
+  - one paragraph on the main figure
+  - one paragraph on the complementary figure(s)
+  - one paragraph on limitations / missing experiments / cautious claims
+
+  Topic:
+  {topic}
+
+  Algorithm summary:
+  {algorithm_md}
+
+  Benchmark summary:
+  {benchmark_definition_md}
+
+  Experiment plan JSON:
+  {experiment_plan_json}
+
+  Deterministic Phase 2.5 experiment summary JSON:
+  {phase25_experiment_summary_json}
+
+  Optional table markdown, usually empty in the current route:
+  {table_md}
+
+  Figure metadata JSON:
+  {figure_metadata_json}
+
+  Missing experiments markdown:
+  {missing_experiments_md}

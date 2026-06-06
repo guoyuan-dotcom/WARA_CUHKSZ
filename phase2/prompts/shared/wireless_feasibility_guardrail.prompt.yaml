@@ -1,0 +1,10 @@
+phase_id: shared
+slug: wireless_feasibility_guardrail
+name: wireless_feasibility_guardrail
+variables:
+  - detected_mechanisms
+  - topic_specific_rules
+template: |
+  Wireless technical feasibility guardrail:
+  - Current detected technical features: {detected_mechanisms}.
+  {topic_specific_rules}

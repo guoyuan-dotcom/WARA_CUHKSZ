@@ -1,0 +1,17 @@
+# Core runtime dependencies for the WARA workspace.
+PyYAML>=6.0.1
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+tabulate>=0.9
+
+# Phase 2.4/5 numerical validation and optional solver paths.
+scipy>=1.10
+cvxpy>=1.4
+
+# Optional web and document helpers used by phase1/phase2 modules.
+requests>=2.31
+beautifulsoup4>=4.12
+PyPDF2>=3.0
+arxiv>=2.1.0
+openai>=1.88

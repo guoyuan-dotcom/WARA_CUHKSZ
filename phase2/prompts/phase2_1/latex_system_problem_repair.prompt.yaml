@@ -1,0 +1,82 @@
+phase_id: phase2.1
+slug: system_model_problem_formulation
+name: ieee_latex_system_problem_repair
+variables:
+  - topic
+  - repair_mode
+  - mathematical_contract_json
+  - issue_summary
+  - current_tex
+output_schema:
+  required:
+    - ieee_wcl_system_model_problem_formulation_tex
+template: |
+  You are repairing a LaTeX snippet for the System Model and Problem Formulation sections of an IEEE Wireless Communications Letters paper.
+
+  Task:
+  Return valid JSON only with a single key:
+  - ieee_wcl_system_model_problem_formulation_tex
+
+  The value must be the corrected LaTeX snippet.
+
+  Hard rules:
+  - repair_mode is either `formatting_repair` or `semantic_consistency_repair`.
+  - In `formatting_repair`, preserve the technical meaning, labels, variables, objective, and constraints unless a reported equation-formatting issue requires a local rewrite.
+  - In `formatting_repair`, fix only the reported equation display-formatting issues.
+  - If the issue summary reports PDF overfull hbox warnings, treat them as formatting issues that must be fixed. Split long equations, introduce compact shorthands, or restructure oversized displays while preserving labels and mathematical meaning.
+  - Do not use tiny fonts, `\resizebox`, or visual scaling as the default overfull fix; prefer readable IEEE-style mathematical rewriting.
+  - If a SINR, harvested-energy, utility, objective, or response metric would require a very long fraction or summation, introduce a local unnumbered shorthand for the aggregate interference, received power, cost, or response term before the numbered main formula.
+  - In `semantic_consistency_repair`, repair mathematical-status or usage drift relative to the mathematical_contract: restore controls, parameters, random quantities, derived quantities, objective, constraints, notation, and reformulation-only auxiliaries to their contract-defined lifecycle.
+  - In `semantic_consistency_repair`, do not introduce new mechanisms, new variables, or new constraints absent from the mathematical_contract.
+  - In `semantic_consistency_repair`, if the issue summary reports a coordinate-convention conflict, repair only the coordinate convention while preserving the same physical model. Use either horizontal coordinates plus altitude/height, or full-dimensional coordinates with embedded lower-dimensional nodes; do not mix dimensions or add altitude twice.
+  - Preserve the mathematical_contract exactly. Do not promote, rename, delete, or reformulate contract entries unless the contract explicitly allows it.
+  - The mathematical status of each contract entry is immutable.
+  - A control may appear in the optimizer.
+  - A derived_quantity may appear in objectives or constraints only through its defined function.
+  - A reformulation_only auxiliary must not appear in the original problem.
+  - A parameter or random_quantity must never appear as an optimizer variable.
+  - In semantic repairs, keep problem (P0) limited to constraints that restrict the physical controls directly or through derived quantities that depend on those controls. Move pure parameter-domain/model-admissibility conditions such as near-field validity, positive noise power, nonnegative weights, fixed geometry, or nonzero constants into prose assumptions instead of `s.t.` lines.
+  - While repairing equations, preserve restrained IEEE prose and concise transition sentences. Do not collapse the System Model back into a bare formula list.
+  - Preserve the distinction between physical control variables and derived auxiliary quantities. Do not add derived KPI variables, response variables, slack variables, or algorithmic auxiliary variables to the original optimizer line while repairing equation formatting.
+  - Preserve or restore direct problem references: the original optimization should be referred to as "problem (P0)" or "(P0)", not as `Problem \eqref{...}` or an equation number.
+  - The original problem display must be numbered and referenceable: use `\begin{subequations}\label{prob:p0}` with an inner `align` environment, not `align*` or another unnumbered display.
+  - Keep the explicit problem name such as `\text{(P0)}` on the objective line, but number and label the objective plus every constraint line.
+  - If the objective is a long worst-case, expectation, min--max, or scenario-aggregated utility, define one compact scalar objective shorthand immediately before problem (P0), preferably `\psi(\cdot)` unless the snippet already defines another symbol. Later experiment labels must reuse this defined shorthand rather than inventing a new worst-case-utility alias.
+  - Use constraint-oriented labels such as `\label{con:p0_obj}`, `\label{con:p0_budget}`, `\label{con:p0_quality}`, `\label{con:p0_coupling}`, and `\label{con:p0_domain}`. Do not use `eq:p0_*` labels.
+  - Do not preserve or introduce printed internal artifact ids such as `(C-PWR)`, `(C-NF)`, `(C-WGT)`, `(C-NOISE)`, `C1`, or `C2` inside paper-facing equation lines.
+  - Constraint references such as `\eqref{con:p0_power}` are allowed. What is forbidden is referring to the whole optimization problem as `Problem \eqref{...}`.
+  - In the formal optimization display, use `\max` or `\min`, not `\mathrm{maximize}`, `\operatorname{maximize}`, `\mathrm{minimize}`, or `\operatorname{minimize}`.
+  - In the formal optimization display, use `\mathrm{s.t.}` or `\text{s.t.}`, not `\mathrm{subject\ to}`, `\text{subject to}`, or the full words "subject to".
+  - Keep explanations of resource allocation, coupling, noise or impairment placement, nonlinear mappings, or utility-map parameters concise if they already appear in the current snippet.
+  - Keep any expectation- or covariance-based explanation that connects independent streams, waveforms, or random quantities to a closed-form KPI, but do not expand it into tutorial-style exposition.
+  - Avoid emphatic or AI-like adverbs and connectors such as "critically", "importantly", "specifically", "formally", and "central".
+  - Keep the output as subsection-level LaTeX; do not include document preamble, bibliography, or a full paper wrapper.
+  - Ensure every referenced equation has a matching \label in the same snippet.
+  - Do not put \label directly on \subsection commands.
+  - Enforce equation formatting:
+    - one displayed equation should define only one mathematical quantity or relation;
+    - reserve `subequations` for the original optimization problem (P0) only; do not preserve or introduce `subequations` for ordinary System Model definitions, channel models, uncertainty-set definitions, signal equations, KPI definitions, or hardware-response formulas;
+    - do not preserve compact multi-relation equations from the current snippet; rewrite them into paper-readable single-relation displays;
+    - do not join multiple definitions in one display with `\qquad`, commas, or semicolons;
+    - do not write chained definitions such as `a=b=c`;
+    - do not write chained inequalities such as `a\leq b\leq c`; use set-membership notation such as `b\in[a,c]` or split the bounds into separate lines;
+    - each numbered equation or align line may contain at most one primary equality or inequality relation.
+  - For quantities already present in the snippet, use separate displayed relations for each performance, resource, sensing, queueing, hardware-response, utility, and other KPI formula. Do not add topic mechanisms absent from the current snippet.
+  - If an optimization problem uses an aligned display, keep one objective or one constraint relation per line.
+  - Do not introduce equivalent transformations, threshold substitutions, lifted variables, or auxiliary-variable formulations into the Problem Formulation while repairing unless they are listed as original constraints in mathematical_contract.
+  - The repaired snippet must compile without overfull hbox warnings in a two-column IEEE preview.
+
+  Topic:
+  {topic}
+
+  Repair mode:
+  {repair_mode}
+
+  Mathematical contract:
+  {mathematical_contract_json}
+
+  Issue summary to fix:
+  {issue_summary}
+
+  Current LaTeX snippet:
+  {current_tex}

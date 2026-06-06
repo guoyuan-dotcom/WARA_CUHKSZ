@@ -1,0 +1,118 @@
+phase_id: phase2.4
+slug: code_file_generation_legacy_deprecated
+name: module_code_file_legacy_deprecated
+variables:
+  - allowed_files
+  - file_target
+  - file_role
+  - interface_contract
+  - export_contract
+  - signature_contract
+  - other_interfaces
+  - file_rule_text
+  - module_plan_summary
+  - model_contract_summary
+  - allowed_operator_keys
+  - topic
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - reformulation_path_md
+  - algorithm_md
+  - benchmark_definition_md
+  - validation_plan_summary
+  - problem_data_contract_summary
+output_schema:
+  required:
+    - python_source
+template: |
+  Legacy notice:
+  This multi-file solver prompt is not used by the current WARA Phase 2.4 pipeline.
+  The active architecture is fixed harness + single `generated_experiment_core.py` via `plugin_core.prompt.yaml`.
+
+  You are writing one Python file for Phase 2.4 of a wireless communications optimization agent.
+  
+  Task:
+  Return raw Python source only.
+  Do not return JSON.
+  Do not use markdown fences.
+  Do not include explanations before or after the code.
+  
+  Rules:
+  - Stay strictly within wireless communications + optimization + 5G/6G framing.
+  - Write only the requested file.
+  - Use plain Python with numpy/cvxpy/pathlib/json/dataclasses as needed.
+  - Keep interfaces concrete and minimal.
+  - Do not rely on unavailable local project modules.
+  - Be faithful to the reformulation and algorithm route from earlier phases.
+  - Treat mathematical_contract_json as the frozen original-problem interface. Code may create implementation variables and numerical proxies, but objective/constraint evaluation must remain anchored to the original controls, derived quantities, and constraints in that interface.
+  - Do not promote reformulation-only variables, sweep diagnostics, or implementation helper fields into new original design variables.
+  - If something is approximate or heuristic, state it clearly in comments.
+  - Use ASCII only.
+  - Keep comments brief and technical; no long tutorial prose.
+  - Do not add self-test code under __main__.
+  - Avoid oversized helper functions when a short helper plus clear interface is enough.
+  - When reading or writing YAML/JSON/text files, use UTF-8 encoding unless the file format strictly requires otherwise.
+  - Only use this Phase 2.4 file set:
+  {allowed_files}
+  - Do not invent extra module names such as common.py, solver_ao.py, problem.py, utils.py, or main.py.
+  - Do not rename exported classes or functions.
+  - Do not make run_validation.py import symbols outside the contract below.
+  - If this file touches model['operators'], use exactly the operator keys declared below. Do not invent aliases or semantic variants.
+  
+  Requested file:
+  {file_target}
+  
+  Role:
+  {file_role}
+  
+  Interface contract:
+  {interface_contract}
+  
+  This file must export exactly these required interfaces:
+  {export_contract}
+  
+  Use these exact function signatures where specified:
+  {signature_contract}
+  
+  Other files may import only these known interfaces:
+  {other_interfaces}
+  
+  File-specific constraints:
+  {file_rule_text}
+  
+  Phase 2.4 module plan:
+  {module_plan_summary}
+  
+  Model contract summary:
+  {model_contract_summary}
+  
+  Allowed operator keys for this file:
+  {allowed_operator_keys}
+  
+  Topic:
+  {topic}
+  
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+  
+  System model:
+  {system_model_md}
+  
+  Problem formulation:
+  {problem_formulation_md}
+  
+  Reformulation path:
+  {reformulation_path_md}
+  
+  Algorithm:
+  {algorithm_md}
+  
+  Benchmark definition:
+  {benchmark_definition_md}
+  
+  Validation plan schema summary:
+  {validation_plan_summary}
+  
+  Current problem_data contract summary:
+  {problem_data_contract_summary}

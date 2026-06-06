@@ -1,0 +1,77 @@
+# Runtime outputs
+runs/
+artifacts/
+run_logs/
+paper_outputs/
+figures/
+paper_runs/
+wara_runs/
+runtime/
+phase1/runs/
+phase1/artifacts/
+phase2/runs/
+phase2/artifacts/
+phase2/run_logs/
+phase3/runs/
+phase3/artifacts/
+phase3/run_logs/
+outputs/*
+!outputs/.gitkeep
+!outputs/README.md
+!outputs/paper_runs/
+outputs/paper_runs/*
+!outputs/paper_runs/.gitkeep
+!outputs/paper_runs/phase1/
+outputs/paper_runs/phase1/*
+!outputs/paper_runs/phase1/.gitkeep
+!outputs/paper_runs/phase2/
+outputs/paper_runs/phase2/*
+!outputs/paper_runs/phase2/.gitkeep
+!outputs/paper_runs/phase3/
+outputs/paper_runs/phase3/*
+!outputs/paper_runs/phase3/.gitkeep
+!outputs/paper_runs/final_papers/
+outputs/paper_runs/final_papers/*
+!outputs/paper_runs/final_papers/.gitkeep
+
+# Local caches and temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.wara_cache/
+tmp/
+tmp*/
+tmp_wcl_intro_study/
+backups/
+.venv/
+venv/
+
+# Packaged binaries/build products
+build/
+dist/
+*.zip
+*.exe
+*.spec
+*.spec~
+
+# Local secrets and environment overrides
+.env
+.env.*
+!.env.example
+*.local
+secrets.*
+credentials.*
+
+# Logs
+*.log
+*.err
+*.out
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

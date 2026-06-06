@@ -1,0 +1,148 @@
+phase_id: phase2.3
+slug: algorithm_theory_latex
+name: ieee_latex_proposed_solution
+variables:
+  - topic
+  - mathematical_contract_json
+  - algorithm_md
+  - convergence_or_complexity_md
+  - benchmark_definition_md
+output_schema:
+  required:
+    - ieee_wcl_proposed_solution_tex
+template: |
+  You are writing a concise IEEE Wireless Communications Letters style LaTeX section for the proposed solution.
+
+  Task:
+  Return valid JSON only with a single key:
+  - ieee_wcl_proposed_solution_tex
+
+  The value must be LaTeX text for a compact theory section after System Model and Problem Formulation.
+
+  Rules:
+  - Use IEEE paper style wording.
+  - Keep it concise and publication-oriented.
+  - Do NOT emit a top-level `\section{...}` heading, because the wrapper already provides the section title.
+  - Do not assume that the wrapper section title is always "Proposed Solution"; write content that also fits titles such as "Proposed Method" or "Proposed Algorithm".
+  - Start with one short unheaded section-level introduction paragraph before the first `\subsection`.
+  - The opening paragraph must be 2--4 sentences, contain no displayed equations and no citation commands, and explain the solution route and why the section is needed after the original problem formulation.
+  - The preceding System Model and Problem Formulation section already explains the convexity/technical-difficulty status and modeling coupling. Do not open this section by restating why the problem is hard, why variables are coupled, or what the system model contains.
+  - A good opening should transition directly to the method, e.g., "To solve problem (P0), we develop..." or "We solve problem (P0) by..."; avoid openings of the form "The formulated problem is nonconvex because...".
+  - Use at most two subsections by default and at most three only when the method genuinely needs a separate complexity/convergence discussion.
+  - Do not create separate subsections for every block update, surrogate, or scalar search. Put such details in focused paragraphs under a broader method subsection.
+  - Use `\subsection{Problem Reformulation}` only when a genuine new reformulation is introduced. If the method is a candidate-search/proxy algorithm that keeps the original physical variables unchanged, do not call the opening subsection "Problem Reformulation"; use "Solution Approach" or "Candidate Evaluation" instead.
+  - Ensure every referenced equation, algorithm, or proposition has a matching label in the same snippet.
+  - Namespace labels defined in this snippet to avoid collisions with the System Model section:
+    - use labels such as `eq:solution_metric`, `eq:solution_surrogate`, `eq:solution_update`, and `eq:solution_projection`;
+    - do not reuse generic labels already owned by the System Model section;
+    - use `alg:solution_proposed` rather than `alg:proposed`.
+  - Do not include document preamble, bibliography, or full paper wrapper.
+  - Stay faithful to the provided algorithm-design outputs.
+  - Treat mathematical_contract_json as the frozen interface for the original problem. Do not rewrite the original optimizer, objective, constraints, or notation.
+  - Reformulation, auxiliary, lifted, slack, transform, surrogate, relaxation, or solver-friendly variables may appear only as algorithmic/reformulation variables, not as original design variables.
+  - Do not restate the System Model inside the proposed-method section.
+  - Do not repeat the final convexity/technical-difficulty paragraph from the Problem Formulation section. The proposed-method section should start from the solver idea, not from a second problem diagnosis.
+  - Quantities already listed under mathematical_contract_json.derived_quantities, such as communication metrics, sensing metrics, hardware-response metrics, resource metrics, reliability metrics, or the original utility/objective, must be referenced textually as previously defined physical metrics rather than redefined with displayed equations.
+  - The opening method subsection should contain at most one compact display, and only if it defines a genuinely new surrogate, auxiliary update, candidate-selection rule, or reformulated subproblem. It must not display the original signal model, original KPI definitions, or original objective again.
+  - If no genuine mathematical reformulation exists, explicitly state that the method keeps the original variables and evaluates candidates using the physical metrics defined in the System Model, then move directly to the algorithm.
+  - Convert any internal workflow wording from the input into paper-native language:
+    - write "system model", "proposed algorithm", "numerical experiments", or "original physical equations" instead of internal phase names;
+    - do not emit phrases such as `Phase 2.1`, `Phase~2.1`, `Phase 2.3`, `Phase 2.4`, `Phase 2.5`, `pipeline`, `draft`, or `generated_plugin` in the paper text.
+  - Equation formatting is a hard constraint:
+    - one displayed equation should define only one mathematical quantity or relation;
+    - do not preserve compact multi-relation equations from the algorithm draft; rewrite them into paper-readable single-relation displays;
+    - do not join multiple definitions in one display with `\qquad`, commas, or semicolons;
+    - do not write original KPI or objective displays if those quantities were already defined in the System Model; equation-formatting rules apply only when a new algorithmic relation is necessary;
+    - do not write chained definitions such as `a=b=c`; split them into separate displayed equations or move the intermediate quantity into prose;
+    - do not write chained inequalities such as `a\leq b\leq c`; use set-membership notation such as `b\in[a,c]` or split them into two lines;
+    - each numbered equation or align line may contain at most one primary equality or inequality relation.
+  - Avoid overfull two-column displays. For long auxiliary expressions, surrogate bounds, conic constraints, or algorithmic subproblems, introduce compact shorthands before the display or split the display across readable aligned lines. Do not expand long vectors inside a narrow column when a named compact vector can be defined first.
+  - Focus on the proposed solution method and only the new reformulation objects needed by that method.
+  - Do not spend space on conventional/benchmark derivation.
+  - Do not force theorem/lemma environments if they are not essential; if one is used, include a real proof path rather than a proof placeholder.
+  - If there is a proof-related point, keep it minimal and only for key facts such as relaxation tightness or reformulation exactness.
+  - Do not upgrade a heuristic algorithm-design output into a formal convexity or relaxation theorem in LaTeX. If the input marks an update as heuristic or empirical, preserve that wording.
+  - Do not write that a surrogate/proxy block is convex unless the input notes provide the relevant auxiliary variables and a valid convexity argument. Otherwise use scoped proxy/heuristic wording and state how feasibility/objective behavior is checked.
+  - Do not convert unresolved theory notes into polished black boxes. If algorithm_md uses a placeholder such as \(\Phi_m\), "selected ambiguity model", or "safe conic counterpart" without a concrete model and expression, write an honest scoped method description and state the missing model requirement; do not present it as a completed theorem.
+  - If a safe/conic/chance-constraint counterpart is used, the section must define the concrete uncertainty/ambiguity model and the deterministic constraint form before claiming convexity or safety.
+  - If product epigraphs such as \(t\rho\ge 1\) appear, write the solver-ready representation or substitution in standard conic form rather than leaving a bilinear-looking constraint unexplained.
+  - Apply mechanism-specific closure only when that mechanism appears in the supplied algorithm-design outputs. Do not import absent mechanisms from examples or prior runs.
+  - Before writing, resolve the active contribution mode from the supplied algorithm-design outputs: exact mapping, safe counterpart/certification, iterative decomposition, relaxation with recovery, or heuristic/empirical search. Reflect that mode in both the prose and the algorithm environment.
+  - If matrix-valued transmit controls or lifted beam variables are optimized, include one concise sentence explaining physical signaling, high-rank realization, rank-one restriction, or recovery scope.
+  - If an auxiliary/shared/non-information/service signal or resource enters a receiver metric as interference or useful signal, include one concise sentence explaining the non-cancellation/no-decoding, joint-decoding, or cancellation receiver model.
+  - For scalar resource updates, do not write that the block is convex/concave unless the input explicitly provides a proof. Prefer the update type stated in the algorithm notes, such as closed-form update, bounded search, or accept-if-improves proxy update.
+  - Do not write broad claims such as "each block update can be handled by standard convex optimization tools" when one block is a scalar search, discrete choice, relaxation-recovery step, or proxy update.
+  - Do not claim KKT convergence, stationary-point convergence, global optimality, or exact SDR recovery unless the input notes explicitly provide the assumptions and proof route.
+  - Prefer this compact WCL-style section flow:
+    - one unheaded opening paragraph;
+    - `\subsection{Algorithm Development}` or `\subsection{Method Design}` for the essential reformulation/update logic;
+    - `\subsection{Algorithm Summary and Complexity}` only if a separate closing subsection is needed.
+  - Avoid opening with a long block of system-model definitions. This section follows the System Model and must not make the reader reread it.
+  - Avoid loose narrative filler. Every paragraph should either define a reformulation step, describe a solvable subproblem, or state a key property.
+  - Writing style requirements for IEEE high-level journals:
+    - Use natural narrative transitions between paragraphs and between reformulation and algorithm steps.
+    - Do not write the section as fragmented bullet-like notes.
+    - Do not use bold inline labels such as "Step 1", "Step 2", or bold mini-headings inside paragraphs.
+    - Prefer polished transitions such as "Given the reformulated objective, we next update...", "With the current block fixed, the remaining subproblem reduces to...", and "This observation motivates the following iterative procedure."
+    - Keep each paragraph logically focused: reformulation paragraph, solvable-subproblem paragraph, algorithm paragraph, and optional property paragraph.
+    - State only the essential proof-related point in prose, instead of introducing unnecessary theorem environments.
+  - You may use the following LaTeX structures:
+    - \subsection / \subsubsection
+    - equation / align / subequations
+    - plain paragraphs
+    - exactly one standard algorithm environment using:
+      - \begin{algorithm}[!t]
+      - \begin{algorithmic}[1]
+      - \Require / \Ensure / \State / \While / \If / \For / \Return
+  - The snippet must include exactly one standard `algorithm` environment using top placement: \begin{algorithm}[!t].
+  - The algorithm environment must be a compact paper-facing method skeleton, not a solver transcript and not a paragraph-only replacement.
+  - The algorithm environment must be route-aware:
+    - for a direct exact/conic/certified route, write a compact procedure with model-specific construction, counterpart assembly, solve, and physical KPI verification;
+    - for an iterative route, include initialization, the main update loop, stopping, and final physical evaluation;
+    - for a relaxation-with-recovery route, include relaxed solve, recovery/randomization, and post-recovery feasibility checking;
+    - for a heuristic route, include candidate generation or update, acceptance/evaluation, and return of the best feasible design.
+  - Prefer 4-7 numbered `\State` lines, with `\Require` and `\Ensure`; avoid `\Statex`, nested branching, and long mathematical expressions inside the algorithm block.
+  - Include only method-level steps: form coefficients or surrogates, solve the stated subproblem/update blocks, check the original constraints or objective when needed, and return the optimized physical variables/KPIs.
+  - A direct-route algorithm block must not reduce to only "form problem, solve problem, return solution"; it needs at least one explicit model-specific construction step and one post-solve interpretation or verification step.
+  - Do not list generic solver internals such as primal/dual residual loops, homogeneous self-dual embeddings, phase-I searches, line-search details, PSD-preserving step sizes, residual/gap traces, or iteration counters unless they are the actual proposed contribution.
+  - Use a loop or stopping rule only when the proposed method itself is iterative; for a direct convex/conic method, state the solver call and feasibility check in one or two steps.
+  - Do NOT use theorem-like environments, including:
+    - theorem
+    - lemma
+    - proposition
+    - corollary
+    - remark
+  - Do NOT put \label directly on \subsection or \subsubsection commands.
+  - Do NOT emit citation commands such as \cite unless the snippet is fully self-contained with an inline placeholder bibliography, which it should not be.
+  - Do NOT reference labels that are not defined inside this exact snippet.
+  - Define the algorithm environment cleanly with a caption and label, and refer to it naturally in prose.
+  - Do NOT use \tag inside a plain equation environment. If multiple labeled constraints are needed, use subequations+align correctly with one relation per line, or rewrite them as separate equations.
+  - Do NOT create labels such as eq:FP or alg:proposed unless they are explicitly defined in this snippet.
+  - Prefer textual references to previously defined physical quantities over repeating their formulas. It is better to write "using the physical metrics defined in the System Model" than to re-display those expressions here.
+  - After the algorithm block, use at most one concise scope/complexity paragraph unless the input provides a real theorem-level contribution.
+  - Do not write a solver manual in prose: avoid detailed residual/certificate/phase-I/line-search explanations unless those diagnostics are the proposed contribution.
+  - The output must compile under a wrapper that loads only:
+    - amsmath
+    - amssymb
+    - amsfonts
+    - bm
+    - mathtools
+    - hyperref
+    - algorithm
+    - algpseudocode
+  - Therefore, avoid any environment or command outside those packages.
+
+  Topic:
+  {topic}
+
+  Frozen mathematical interface from Phase 2.1:
+  {mathematical_contract_json}
+
+  Algorithm draft:
+  {algorithm_md}
+
+  Convergence / complexity notes:
+  {convergence_or_complexity_md}
+
+  Benchmark definition draft:
+  {benchmark_definition_md}

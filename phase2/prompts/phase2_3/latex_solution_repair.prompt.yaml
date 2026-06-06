@@ -1,0 +1,106 @@
+phase_id: phase2.3
+slug: algorithm_theory_latex_repair
+name: ieee_latex_proposed_solution_repair
+variables:
+  - topic
+  - mathematical_contract_json
+  - issue_summary
+  - compile_log_tail
+  - current_tex
+output_schema:
+  required:
+    - ieee_wcl_proposed_solution_tex
+template: |
+  You are repairing a LaTeX snippet for an IEEE Wireless Communications Letters style proposed-solution section.
+
+  Task:
+  Return valid JSON only with a single key:
+  - ieee_wcl_proposed_solution_tex
+
+  The value must be a corrected LaTeX snippet.
+
+  Hard rules:
+  - Preserve the technical meaning of the current snippet unless a LaTeX/structure issue forces a local rewrite.
+  - Fix only the issues reported below.
+  - Keep or add one short unheaded section-level opening paragraph before the first `\subsection` when structure is being repaired. It should be 2--4 sentences with no displayed equations and no citation commands.
+  - If the opening paragraph restates why the original problem is nonconvex or hard, why variables are coupled, or what the system model contains, rewrite it into a direct method transition such as "To solve problem (P0), we develop..." or "We solve problem (P0) by...".
+  - Do not repeat the final convexity/technical-difficulty paragraph from the Problem Formulation section while repairing; that discussion belongs to the preceding section.
+  - Use at most two subsections by default and at most three only when a separate complexity/convergence discussion is necessary. Do not create separate subsections for every block update, surrogate, or scalar search.
+  - If the issue summary reports PDF overfull hbox warnings, treat them as formatting issues that must be fixed. Split long equations, introduce compact shorthands before large displays, or replace oversized expanded constraints/vectors with named compact definitions.
+  - Do not use tiny fonts, `\resizebox`, or visual scaling as the default overfull fix; prefer readable IEEE-style mathematical rewriting.
+  - Treat mathematical_contract_json as the frozen interface for the original problem. Do not rewrite the original optimizer, objective, constraints, or notation while repairing.
+  - Reformulation-only variables may remain only as proposed-solution algorithmic variables. Do not describe them as original design variables.
+  - Do not restate the System Model while repairing.
+  - Do not restate the original objective, original constraints, or already defined physical quantities unless a compact algorithmic shorthand is needed for a new update rule.
+  - For scalar resource updates, remove unsupported claims that the block is convex/concave unless the current snippet provides a proof. Replace them with the scoped update type stated by the algorithm notes, such as bounded search, closed-form update, or proxy update.
+  - Replace broad claims such as "each block update can be handled by standard convex optimization tools" when one block is a scalar search, discrete choice, relaxation-recovery step, or proxy step.
+  - If the current snippet displays original derived quantities already defined in mathematical_contract_json, remove those repeated displays and replace them with concise textual references to the System Model.
+  - Use `\subsection{Problem Reformulation}` only for a genuine new reformulation. If the method keeps the original variables and uses candidate evaluation, rename the opening subsection to `\subsection{Solution Approach}` or `\subsection{Candidate Evaluation}`.
+  - Convert any internal workflow wording into paper-native language:
+    - write "system model", "proposed algorithm", "numerical experiments", or "original physical equations" instead of internal phase names;
+    - do not emit phrases such as `Phase 2.1`, `Phase~2.1`, `Phase 2.3`, `Phase 2.4`, `Phase 2.5`, `pipeline`, `draft`, or `generated_plugin` in the paper text.
+  - Enforce equation formatting while repairing:
+    - one displayed equation should define only one mathematical quantity or relation;
+    - do not preserve compact multi-relation equations from the current snippet; rewrite them into paper-readable single-relation displays only when the relation is new to the proposed solution;
+    - do not rewrite repeated system-model equations into separate displays; remove them from the proposed-solution section instead;
+    - do not join multiple definitions in one display with `\qquad`, commas, or semicolons;
+    - do not write chained definitions such as `a=b=c`;
+    - do not write chained inequalities such as `a\leq b\leq c`; use set-membership notation such as `b\in[a,c]` or split the bounds into separate lines;
+    - each numbered equation or align line may contain at most one primary equality or inequality relation.
+  - Namespace labels defined in this snippet to avoid collisions with the System Model section:
+    - use labels such as `eq:solution_metric`, `eq:solution_surrogate`, `eq:solution_update`, and `eq:solution_projection`;
+    - do not reuse generic labels already owned by the System Model section;
+    - use `alg:solution_proposed` rather than `alg:proposed`.
+  - The repaired snippet should contain exactly one compact standard algorithm block with:
+    - algorithm
+    - algpseudocode
+  - The algorithm block must use top placement: \begin{algorithm}[!t].
+  - The algorithm block must be a compact paper-facing method skeleton, not a solver transcript.
+  - Repair the algorithm block according to the method route already present in the current snippet or issue summary:
+    - direct exact/certified route: model-specific construction, counterpart assembly, solve, and KPI verification;
+    - iterative route: initialization, update loop/order, stopping, and final evaluation;
+    - relaxation-with-recovery route: relaxed solve, recovery/randomization, and post-recovery feasibility checking;
+    - heuristic route: candidate generation/update, acceptance or selection, and final best-feasible return.
+  - Prefer `\Require`, `\Ensure`, and 4-7 numbered `\State` lines; avoid `\Statex`, nested branching, and long expressions inside the algorithm block.
+  - If the current direct-route block is only "form problem, solve, return", expand it into a real method skeleton with at least one explicit model-specific construction step and one post-solve interpretation or verification step.
+  - Do not list generic solver internals such as primal/dual residual loops, phase-I embeddings, line-search details, PSD-preserving step sizes, residual/gap traces, or iteration counters unless they are the actual proposed contribution.
+  - Use a loop or stopping rule only when the proposed method itself is iterative; for a direct convex/conic route, state the solver call and feasibility check concisely.
+  - Do NOT use theorem-like environments:
+    - theorem
+    - lemma
+    - proposition
+    - corollary
+    - remark
+  - Do NOT emit \cite commands.
+  - Do NOT put \label directly on \subsection or \subsubsection commands.
+  - Do NOT reference labels that are not defined inside this exact snippet.
+  - If a cross-reference is fragile, remove the reference and restate the quantity in prose instead.
+  - Do not use bold inline mini-headings inside body paragraphs.
+  - Use natural IEEE-style narrative transitions between reformulation, solvable subproblems, and algorithm description.
+  - Keep the algorithm block concise and refer to it naturally in prose.
+  - Keep the post-algorithm scope/complexity discussion concise. Do not preserve generic solver-manual prose about residual loops, certificates, phase-I procedures, or line searches unless it is the actual contribution.
+  - The repaired snippet must compile without overfull hbox warnings in a two-column IEEE preview.
+  - Use only safe core structures compatible with:
+    - amsmath
+    - amssymb
+    - amsfonts
+    - bm
+    - mathtools
+    - hyperref
+    - algorithm
+    - algpseudocode
+
+  Topic:
+  {topic}
+
+  Frozen mathematical interface from Phase 2.1:
+  {mathematical_contract_json}
+
+  Issue summary to fix:
+  {issue_summary}
+
+  Relevant compile-log tail:
+  {compile_log_tail}
+
+  Current LaTeX snippet:
+  {current_tex}

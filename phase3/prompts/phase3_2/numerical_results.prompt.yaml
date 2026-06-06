@@ -1,0 +1,245 @@
+phase_id: phase3.2
+slug: numerical_results
+name: ieee_numerical_results_writer
+variables:
+  - topic
+  - system_model_summary
+  - problem_formulation_summary
+  - algorithm_summary
+  - benchmark_definition_summary
+  - method_mechanism_summary
+  - paper_objective_summary
+  - figure_to_claim_summary
+  - figure_observations_summary
+  - figure_evidence_summary_json
+  - claim_constraints_summary
+  - simulation_setup_facts_json
+  - phase25_summary_json
+  - verified_registry_json
+  - figure_captions_md
+  - analysis_agent_request_json
+output_schema:
+  required:
+    - numerical_results_tex
+template: |
+  You are writing an IEEE Wireless Communications Letters style LaTeX section titled "Numerical Results".
+
+  Task:
+  Return valid JSON only with a single key:
+  - numerical_results_tex
+
+  AnalysisAgent boundary:
+  - Treat the AnalysisAgent request JSON below as the role boundary for this call.
+  - Use it to respect frozen contracts, required artifacts, allowed actions, forbidden actions, and expected output scope.
+  - Do not redefine the mathematical objective, method identities, benchmark identities, figures, metrics, or evidence.
+  - Do not use agent, controller, contract, artifact, gate, or phase terminology in the final paper prose.
+
+  The value must be a LaTeX snippet that:
+  - starts with \section{Numerical Results}
+  - contains one setup paragraph, one benchmark-definition itemize block, and one figure-discussion paragraph for each registered Phase 2.5 figure
+  - imports only the existing Phase 2.5 figures listed in `phase25_summary_json.figures`
+  - does not include any table
+  - is written as final paper text, not as draft, project notes, or pipeline commentary
+  - is insight-driven rather than report-like
+
+  Reference-paper writing pattern:
+  - The section begins by stating that numerical results evaluate the proposed design, then gives concrete simulation parameters and the reported metric.
+  - The compared schemes are defined once before the figure discussions.
+  - Figure captions follow the concise IEEE style used in the supplied reference papers: "Fig. X. [descriptive quantity] $symbol$ versus [descriptive x-axis parameter] $symbol$, where [only the essential fixed parameters]." A paired second figure may use "Corresponding [descriptive quantity] $symbol$ versus ...".
+  - Captions state what is plotted and the key fixed setting only; observations, explanations, benchmark definitions, and insights belong in the paragraph after the figure, not in the caption.
+  - Each figure discussion is a self-contained paragraph. The first sentence says what the figure depicts: metric versus x-axis variable under the supplied setting, with the compared schemes.
+  - The next sentences state the observed trend, explain the reason using the proposed algorithm/model/constraint mechanism, and end with the insight supported by that figure.
+  - This is the style used in standard wireless numerical-result sections: "Fig. X depicts/shows ...", "It is observed that ...", "This is because ...", and "This indicates/validates/supports ...". Use this structure naturally, not mechanically.
+
+  Required LaTeX order:
+  1. \section{Numerical Results}
+  2. One setup paragraph starting exactly with "In this section, we".
+  3. One \begin{itemize}...\end{itemize} block defining only the methods that actually appear in all final Phase 2.5 figures (`phase25_summary_json.figures[].methods`). Do not define audit-only, executed-but-not-plotted, infeasible, redundant, or discarded benchmarks in the paper prose.
+  4. One figure environment for each supplied Phase 2.5 figure, in registry order, followed immediately by its discussion paragraph.
+
+  Hard rules:
+  - Do not invent any new numerical results.
+  - Use the Figure evidence summary JSON to understand trends and regimes, but do not copy pointwise numerical values into the prose.
+  - Stay faithful to the provided Phase 2.5 summary, figure captions, and verified registry.
+  - If a method is not listed in the final Phase 2.5 figure metadata, do not mention it in the benchmark-definition itemize block or figure discussion, even if it appears in earlier benchmark-plan artifacts.
+  - Treat the Phase 2.5 verified registry as the authoritative evidence ledger. Every numerical claim in prose, abstract-style wording, captions, or interpretation must be supported by the verified registry or the Phase 2.5 summary.
+  - Treat the plotted benchmark set as a claim boundary. If the final figures contain only one benchmark, every figure discussion and later high-level claim must compare only against that benchmark. Do not discuss an ablation or baseline that is not plotted in all final figures.
+  - Except for simulation parameters in Paragraph 1, avoid explicit numerical result values in the prose. Discuss trends, insights, and mechanisms instead.
+  - Paragraph 1 must not say only "$N_t$-antenna" or "$M$-element" when the setup facts provide actual values; write the actual values, e.g., "$N_t=8$" and "$M=64$".
+  - Paragraph 1 must not read like the System Model section. It should state numerical simulation settings, not re-explain topology.
+  - Do not write the full x-axis value grids in Paragraph 1. The x-axes are visible from the figures and captions.
+  - Do not write all plotted x-axis sample values in any prose paragraph.
+  - Acronym discipline applies to setup prose, benchmark items, captions, and figure discussions. Every acronym or abbreviation must be defined on first prose use as `full descriptive name (ABBR)`, unless the benchmark item label itself uses `\item \textbf{ABBR}: full descriptive name ...`.
+  - Numerical Results belongs to the main-body acronym scope. Use acronyms already introduced earlier in the main body without redefining them. If a new acronym first appears in this section, define it once as `full descriptive name (ABBR)`.
+  - If the full form of a method label or metric abbreviation is not supplied by the artifacts, avoid the abbreviation instead of guessing.
+  - Define benchmark abbreviations exactly once. If the item label is an acronym, write `\item \textbf{ACRONYM}: full descriptive name ...`; do not write `\item \textbf{full descriptive name (ACRONYM)}: ... full descriptive name (ACRONYM)`.
+  - After an acronym is defined in the benchmark itemize block, later figure paragraphs should use either the acronym alone or the full descriptive phrase alone, not another parenthetical definition.
+  - Avoid pipeline terms for plotted variable changes. Use paper-style trend language such as "increases with $P_{\max}$", "decreases as $b$ grows", "varies with $b$", or "as $P_{\max}$ increases".
+  - If the Simulation setup facts JSON contains Monte Carlo seed counts, they may be mentioned in Paragraph 1 as setup facts. Do not put seed-count, mean/average, or standard-error language into figure captions or axis descriptions.
+  - Do not claim strict monotonicity for any figure unless the supplied captions/summary explicitly support it.
+  - If Phase 2.5 says figures are draft-only or missing statistical evidence, do not write as if the experiments are submission-ready.
+  - The current WARA figure style uses clean curves without plotted error bars by default. Do not add error-bar, confidence-interval, standard-error, standard-deviation, IQR, cap, stem, or uncertainty-band language, even when repeated seeds are available, unless the user explicitly requested such graphics and the supplied figure metadata says they are plotted.
+  - Use the supplied method names consistently:
+    - short names for figure references when natural
+    - full names on first mention
+    - benchmark names must come from the supplied Phase 2.5 summary, verified registry, method naming summary, benchmark definition summary, or figure metadata
+  - Do not hard-code topic-specific benchmark names from another run.
+  - If a supplied figure explicitly uses uncertainty graphics, describe them briefly in prose only; otherwise avoid statistical-process language.
+  - Keep the style concise and publication-oriented.
+  - Write like an IEEE WCL results section, not like an artifact report. Prefer claim/evidence/insight sentences over "the curve data are..." or "the package contains...".
+  - Use ASCII-only prose outside LaTeX macros; if a parameter symbol is needed, prefer standard LaTeX such as $\delta$.
+  - Do not include \documentclass or \begin{document}.
+  - Use standard LaTeX figure environments.
+  - Do not use \begin{table}, \begin{table*}, \begin{tabular}, or Table~\ref{...}.
+  - Do not use draft or project-report language such as:
+    - preliminary
+    - draft
+    - more runs are needed
+    - not paper-ready
+    - this figure should be interpreted as
+    - bar chart confirms
+    - generated by the pipeline
+  - Do not discuss Phase 2.4, Phase 2.5, harnesses, plugins, LLMs, or internal workflow.
+  - Do not mention "evidence package", "verified registry", "curve data", "preview", "pipeline", "artifact", or "paper-ready".
+  - Keep the total prose length around 320 to 460 words, excluding the benchmark itemize block.
+  - Do not collapse the Numerical Results section into a short plot-by-plot summary.
+  - Keep each of the three required paragraphs substantive, with roughly 3 to 5 sentences per paragraph.
+  - Preserve a full paper-style discussion of setup and each supplied figure.
+  - Use exactly the `filename_pdf` values from `phase25_summary_json.figures`, with the path prefix `../phase2-5/figures/`.
+  - Do not create `figure_2`, `figure_2.pdf`, a second figure paragraph, or any other figure if Phase 2.5 did not register that figure and provide its `filename_pdf`.
+
+  Writing objective:
+  - Generate a final IEEE WCL-style Numerical Results section that is insight-driven, not report-like.
+  - First-pass authoring principle: write this section as a mature paper section on the first attempt. Do not expect a later review pass to add mechanism explanations, evidence alignment, benchmark consistency, or claim scope.
+  - Write like an author explaining why the observed behavior occurs, not like a system describing stored artifacts. Every figure paragraph must contain an observation, a mechanism-level explanation, and a paper-level implication.
+  - Avoid generic endings such as "this demonstrates the effectiveness of the proposed method" unless the sentence names the specific mechanism, benchmark limitation, and operating regime.
+  - Do not include numerical gains or raw value pairs in the figure-discussion paragraphs unless the user explicitly requests them.
+  - Each figure paragraph should follow the style used in IEEE numerical-result sections:
+    1. first sentence: introduce what the figure depicts, using the exact x-axis, metric, and compared schemes from Phase 2.5;
+    2. next sentence(s): describe the observed trend without raw point values;
+    3. next sentence(s): explain why the trend occurs from the proposed algorithm, model, constraints, or benchmark limitation;
+    4. final sentence: state the paper-level insight or implication.
+  - The section must also answer the paper-level questions:
+    1. why this algorithm is proposed,
+    2. what core limitation of the benchmark it addresses,
+    3. which claim each figure supports,
+    4. how the numerical evidence supports the main contribution.
+
+  Writing rules:
+  - Do not merely restate a figure.
+  - Do not write raw value pairs such as "$\psi=...$ versus ...".
+  - The reported metric symbol must match the objective/KPI notation defined earlier in the paper. Do not introduce a new worst-case-utility alias unless the System Model or Problem Formulation explicitly defined that exact symbol.
+  - Do not write numerical gain percentages in the figure-discussion paragraphs.
+  - Do not use report-like phrases such as "at all N sampled values", "a representative separation is", "the corresponding curve data", "the maintained separation", or "the crossover is informative rather than problematic".
+  - Explain why the proposed method improves the target metric based on the method mechanism and system model; respect whether the metric is minimized or maximized.
+  - If the proposed method does not dominate a benchmark over the full plotted range, explicitly scope the claim to the range supported by the data.
+  - It is acceptable for the proposed method to improve over one credible benchmark while another plotted benchmark remains competitive. In that case, base the claim on the supported benchmark comparison and use the competitive benchmark to explain the operating regime or limitation; do not write that the proposed method outperforms all benchmarks.
+  - If a trend is not strictly monotonic, describe it as regime-dependent behavior rather than a monotonic scaling law.
+  - Do not claim statistical significance unless an explicit statistical test is supplied. If seed-stability diagnostics are weak, keep the claim scoped instead of discussing error-bar overlap.
+  - If both methods have the same feasibility rate, state that the gain is not obtained by violating the constraints.
+  - Each body paragraph should contain at least one explicit causal sentence starting from ideas such as:
+    - "This behavior is expected because ..."
+    - "This gain is attributed to ..."
+    - "The maintained gap indicates that ..."
+    - "The identical feasibility rates indicate that ..."
+  - Each results paragraph should explicitly link the numerical evidence to one paper claim or contribution.
+  - Use confident but non-exaggerated paper language such as:
+    - shows
+    - achieves
+    - yields
+    - outperforms
+    - improves
+    - maintains feasibility
+    - supports the benefit of
+  - It is acceptable, and preferred, for the first sentence of each figure paragraph to start with "Fig.~\ref{...} depicts ..." or "Fig.~\ref{...} shows ...", provided the following sentences give observation, explanation, and implication.
+  - Do not describe a grouped-bar figure as "two curves" or "the separation between curves"; use wording appropriate for categorical comparisons.
+  - Avoid empty statements such as:
+    - the proposed method performs better
+    - the results show effectiveness
+    - the method is robust
+    unless the sentence immediately explains better/effective/robust in terms of the algorithmic mechanism and the benchmark limitation.
+
+  Before returning, verify internally:
+  1. The setup paragraph, benchmark itemize block, figure captions, and figure discussions use the same final method set.
+  2. Every figure paragraph states what is plotted, the observation, the mechanism explanation, and the paper-level insight.
+  3. No claim depends on a benchmark, metric, or figure absent from the verified registry.
+
+  Figure requirements:
+  - The simulation-setup paragraph should summarize only the supplied run topic, system model, metric direction, proposed method, benchmark, and data-generation setting supplied below.
+  - Each figure paragraph must start by saying what the corresponding figure depicts, e.g., "Fig.~\ref{...} depicts [metric] versus [x-axis] under [setting]."
+  - Each figure paragraph must reference its figure label and discuss the exact x-axis, metric, methods, and message supplied in Phase 2.5.
+  - Do not assign fixed roles by figure index; infer the claim supported by each figure from the supplied Phase 2.5 evidence.
+  - In final paper prose and captions, do not use workflow words such as "sweep", "swept", "paper-ready", "preview", "draft", "quick", "medium", or "seed". Use paper-facing wording such as "as the x-axis parameter increases", "over the evaluated operating range", "unless otherwise stated", or "for the considered parameter values".
+  - Use floating labels derived only from registered Phase 2.5 figure ids:
+    - `figure_1` -> `fig:phase25_figure_1`
+    - `figure_2` -> `fig:phase25_figure_2`
+    - other ids -> `fig:phase25_<figure_id>`
+  - Derive short figure captions from the supplied Phase 2.5 figure caption notes and figure metadata only; do not hard-code topic variables, objectives, or subsystem names.
+  - Figure captions and axis references should use labels already present in the metadata and already defined in the paper, with concise physical meaning plus notation, such as `transmit power budget $P_{\max}$`, `rectifier turn-on offset $b$`, `weighted utility $\psi$`, `sum rate $R_{\mathrm{sum}}$`, and `harvested DC power $P_{\mathrm{DC}}$`. Do not reduce captions to bare symbols, and do not expand them into long textbook descriptions.
+  - Never copy internal dotted paths such as `ambiguity.channel_uncertainty_radius`, `constraints.gamma_target`, or `system.Pmax` into a caption, axis phrase, or prose sentence. Use public paper notation already defined by the current contract or figure metadata; do not infer a hardcoded symbol from the path name.
+  - If metadata uses an undefined objective alias, replace it with the defined objective notation from the Problem Formulation instead of repeating the alias.
+  - Keep captions short, normally one sentence. Prefer the pattern `\caption{Worst-case weighted utility $\psi$ versus transmit power budget $P_{\max}$, where ...}` or `\caption{Corresponding worst-case weighted utility $\psi$ versus rectifier turn-on offset $b$, where ...}`.
+  - Do not use bare-symbol caption openings such as `$\psi$ versus $P_{\max}$` or `$R_{\mathrm{sum}}$ versus $K$`. Put a concise physical definition before each plotted symbol.
+  - Include at most 2-4 essential fixed simulation parameters in a caption, such as `$K$`, `$N_t$`, `$P_{\max}$`, `$b$`, `$\epsilon$`, or another fixed parameter needed to interpret the plot. Do not include the x-axis value grid.
+  - Put method definitions and legend explanations in the prose, not in captions.
+  - Do not write caption phrases such as "the plotted methods are", "the same labels", "same colors", "same markers", "preview", "paper-ready", "draft", "sensitivity preview", or "this figure tests".
+  - Do not put trend, gain, dominance, mechanism, or conclusion language in captions.
+  - Do not put "mean", "average", "over seeds", "standard error", or similar statistical-process language in figure captions unless it is explicitly part of the final supplied caption metadata.
+  - Do not use any variable, metric, method name, figure label, or caption that is absent from the supplied Phase 2.5 artifacts and supplied run topic.
+
+  Default LaTeX style:
+  - All figures should use:
+    - \begin{figure}[t]
+    - \includegraphics[width=\linewidth]{...}
+  - Do not use [H], [h], [ht], or bottom placement for the main figures.
+  - Do not use \begin{figure}[H], \begin{figure}[h], or \begin{figure}[ht].
+
+  Inputs:
+
+  Topic:
+  {topic}
+
+  System model summary:
+  {system_model_summary}
+
+  Problem formulation summary:
+  {problem_formulation_summary}
+
+  Algorithm summary:
+  {algorithm_summary}
+
+  Benchmark definition summary:
+  {benchmark_definition_summary}
+
+  Method mechanism summary:
+  {method_mechanism_summary}
+
+  Paper objective and claimed benefit:
+  {paper_objective_summary}
+
+  Figure-to-claim mapping:
+  {figure_to_claim_summary}
+
+  Figure-specific observations:
+  {figure_observations_summary}
+
+  Figure evidence summary JSON:
+  {figure_evidence_summary_json}
+
+  Claim constraints:
+  {claim_constraints_summary}
+
+  Simulation setup facts JSON:
+  {simulation_setup_facts_json}
+
+  Phase 2.5 experiment summary JSON:
+  {phase25_summary_json}
+
+  Phase 2.5 verified registry JSON:
+  {verified_registry_json}
+
+  Figure caption notes:
+  {figure_captions_md}
+
+  WritingAgent request JSON:
+  {analysis_agent_request_json}

@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WARA Manuscript Review Agent</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell review-shell">
+    <header class="app-header review-header">
+      <div class="brand-block">
+        <div class="brand-mark">R</div>
+        <div>
+          <div class="brand-title">Manuscript Review</div>
+          <div class="brand-subtitle">Independent manuscript scoring</div>
+        </div>
+      </div>
+
+      <div class="header-main">
+        <h1>Review a Wireless Optimization Manuscript</h1>
+        <div class="review-steps">
+          <span>1. Upload manuscript</span>
+          <span>2. Select scoring model</span>
+          <span>3. Generate dual rubric scores</span>
+        </div>
+      </div>
+
+      <div class="header-meta">
+        <a class="nav-link" href="./index.html">WARA Console</a>
+        <span id="reviewStatus" class="status-pill status-pill--idle">idle</span>
+      </div>
+    </header>
+
+    <main class="review-layout">
+      <section class="panel review-input-panel manuscript-intake-panel">
+        <div class="panel-head">
+          <h2>Manuscript Intake</h2>
+          <span class="panel-badge">independent agent</span>
+        </div>
+
+        <form id="reviewForm" class="review-form">
+          <label class="manuscript-upload-card">
+            <input id="reviewPdf" type="file" accept="application/pdf,.pdf" required>
+            <span class="upload-icon">M</span>
+            <span class="upload-copy">
+              <strong>Upload manuscript</strong>
+              <em id="reviewPdfName">No file selected.</em>
+            </span>
+            <span class="upload-format">PDF</span>
+          </label>
+
+          <div class="review-field-grid">
+            <label>
+              <span>Manuscript ID</span>
+              <input id="reviewPaperId" type="text" placeholder="Optional anonymized ID">
+            </label>
+
+            <label>
+              <span>Reviewer Model</span>
+              <select id="reviewModelSelect"></select>
+            </label>
+
+            <label>
+              <span>Max Output Tokens</span>
+              <input id="reviewMaxTokens" type="number" min="1000" max="50000" step="1000" value="12000">
+            </label>
+          </div>
+
+          <div class="review-actions">
+            <button id="reviewBtn" type="submit">Review Manuscript</button>
+            <button id="clearReviewBtn" type="button" class="secondary">Clear</button>
+          </div>
+        </form>
+
+        <div class="model-settings review-settings">
+          <div class="settings-head">
+            <div>
+              <strong>LLM API Settings</strong>
+              <span id="reviewModelRateSummary">Select a model to view token pricing.</span>
+            </div>
+            <button id="reviewSaveModelConfigBtn" type="button" class="secondary">Save API Settings</button>
+          </div>
+          <label class="active-api-card">
+            <span>
+              <strong id="reviewActiveProviderName">Selected provider</strong>
+              <em id="reviewActiveKeyStatus">not set</em>
+            </span>
+            <small id="reviewActiveProviderMeta">Choose a model to configure its API key.</small>
+            <input id="reviewActiveApiKey" type="password" autocomplete="off" placeholder="API key for selected model, leave blank to keep existing">
+            <input id="reviewActiveBaseUrl" type="text" autocomplete="off" placeholder="Base URL for selected model">
+          </label>
+        </div>
+      </section>
+
+      <section class="panel review-output-panel">
+        <div class="panel-head">
+          <h2>Scoring Report</h2>
+          <span id="reviewIdBadge" class="panel-badge">no report</span>
+        </div>
+
+        <div id="reviewSummary" class="review-summary-card">
+          <strong>Waiting for a manuscript.</strong>
+          <span>The scoring agent reviews only the uploaded manuscript text and returns research-validity and optimization-maturity scores.</span>
+        </div>
+
+        <div id="reviewScoreGrid" class="review-score-grid"></div>
+        <div id="reviewIssueGrid" class="review-issue-grid"></div>
+
+        <details class="raw-review-box">
+          <summary>Raw JSON</summary>
+          <pre id="reviewRawJson">{}</pre>
+        </details>
+      </section>
+    </main>
+  </div>
+
+  <script src="./review.js"></script>
+</body>
+</html>

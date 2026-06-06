@@ -1,0 +1,81 @@
+phase_id: phase2.4
+slug: plugin_repair
+name: generated_experiment_core_repair
+variables:
+  - topic_specific_repair_rules
+  - status
+  - validation_error_text
+  - phase24_execution_contract_md
+  - validation_plan_summary
+  - current_plugin_code
+output_schema:
+  required:
+    - python_source
+template: |
+  You are repairing `generated_experiment_core.py` for Phase 2.4.
+
+  Return the full repaired Python source only. Do not return JSON, markdown fences, or explanations.
+
+  Repair scope:
+  - Fix the specific validation failure below.
+  - Preserve any behavior that already passed validation.
+  - Do not redesign the objective, constraints, benchmark family, sweep plan, metric contract, or experiment story.
+
+  Required interface after repair:
+  - `build_model(problem, seed=0) -> dict`
+  - `initial_state(problem, model, seed=0) -> dict`
+  - `proposed_step(problem, model, state, iteration) -> dict`
+  - `baseline_solution(problem, model, seed=0) -> dict`
+  - `evaluate_state(problem, model, state) -> dict`
+  - `method_solution(problem, model, method, seed=0) -> dict` when non-default method ids are active
+  - The required signature order is fixed and non-negotiable. Do not rewrite `method_solution` as `method_solution(method, problem=None, model=None, ...)`, do not drop `iteration` from `proposed_step`, and do not add optional `model=None` fallbacks to harness-facing exports.
+  - These exports must be real top-level `def ...` functions in `generated_experiment_core.py`; do not satisfy the interface only through nested helpers, `model["operators"]`, class methods, or the deterministic adapter.
+  - If the validation error reports a missing export, add the missing top-level function and keep its body connected to the same true evaluator/method implementations already used elsewhere in the file.
+  - If the failure is a NumPy shape error such as `cannot reshape array of size ... into shape ...`, repair the affected sanitizer/projector so scalar, empty, or wrong-length arrays are converted into finite arrays of the requested shape by zero-fill, truncation, tiling, or safe resize before projection. Do not let evaluator/projector helpers raise on malformed state inputs.
+
+  Targeted repair rules:
+  - Repair the smallest coherent part of the implementation.
+  - Keep all required exports present.
+  - Preserve private helper APIs that already work. If you change a helper's returned dictionary keys, tuple arity, array shapes, or state fields, update every caller in the same source; otherwise keep the old helper unchanged.
+  - Do not remove a private helper that is still called by `build_model`, `initial_state`, `proposed_step`, `baseline_solution`, `evaluate_state`, or `method_solution`.
+  - Prefer local edits to formulas, sweep-path reads, dispatch, projection, or diagnostics. Do not rewrite the whole solver when the validation failure identifies one metric, one sweep, one method branch, or one traceback.
+  - If the failure reports non-finite metrics, overflow, divide-by-zero, invalid matrix products, or NaN/Inf states, repair numeric parsing and finite projection first. Convert YAML/JSON strings such as `"inf"`, `"infinity"`, `"1e-4"`, and `"30"` explicitly, and treat ideal limits such as continuous phase resolution as algorithm branches rather than as infinite matrix entries.
+  - If the failure status is `numerical_runtime_warning_failed`, repair the source of the warning, not the stderr, metric labels, or feasibility flags. Add finite floors/caps before divisions, logarithms, normalizations, Gram matrices, quadratic forms, and matrix products such as `C.conj().T @ C`; sanitize physical channels/trajectories/covariances before they enter the algebra; and keep the same objective, constraints, methods, and sweeps.
+  - If the failure diagnostics say the proposed method has zero successful rows, all proposed rows failed, no paired proposed-baseline rows exist, or `cvxpy_success` is false for every proposed row, repair the proposed solver path first. Do not fix this by lowering the baseline, deleting the proposed method, marking failed rows as ok, or averaging failed proposed states into figures.
+  - If the solver trace contains a CVXPY `complex2real` failure, `AssertionError`, or a failure around complex `cp.Variable(..., complex=True)`, `cp.quad_form`, `cp.real`, or complex affine products, keep the declared CVXPY/convex subproblem but rewrite it as a real-valued CVXPY formulation. Split complex variables into real and imaginary parts, use a real block matrix representation for Hermitian quadratic forms, and express power/SOC constraints with real norms. Do not remove the CVXPY solve when the frozen route requires it.
+  - If CVXPY itself raises an exception, preserve the full exception message in solver diagnostics while returning a non-success status. Then repair the mathematical CVXPY formulation so at least the low-stress quick-validation proposed cases solve successfully.
+  - Before evaluating metrics, sanitize physical arrays and powers with finite projections that preserve the frozen constraints; do not hide non-finite values by marking failed rows feasible.
+  - Keep every exact active method id implemented in `method_solution`.
+  - Keep WMMSE/SCA update logic if it already exists.
+  - If the validation failure is `algorithm_code_contract` and the contract claims SDP, SDR, SCA, CVX, CVXPY, semidefinite relaxation, convex subproblem, or rank recovery, repair by adding a real `cvxpy` solver path (`import cvxpy as cp`, `cp.Variable`, `cp.Problem`, and `problem.solve(...)`) that is used by the proposed method. Do not merely rename a heuristic or add a proxy disclaimer.
+  - Do not introduce or preserve markers such as `proxy`, `fallback`, `candidate_search`, `lightweight_candidate_search`, or `heuristic_proxy` for the proposed algorithm when the Phase 2.3 route is optimization-based; those markers are treated as a failed paper experiment, not a repair.
+  - Preserve the Phase 2.4 runtime budget: quick validation must finish in minutes and the proposed method must be scalable enough for scout/medium/paper sweeps. If the failure is a hang/timeout/slow validation/runtime_budget, reduce active scenario expansion and inner-loop cost while keeping the same objective, constraints, methods, and swept-path responsiveness.
+  - For runtime_budget failures, specifically remove repeated expensive solves: avoid nested CVXPY inside user/slot loops, warm-start or cache static matrices, reduce metadata `max_iterations` to a small bounded value when the algorithm allows, add solver time limits/max_iters where supported, and replace separable convex blocks with closed-form/projection updates when that is mathematically faithful to the frozen route.
+  - Use the same true objective and constraint evaluator for all methods.
+  - If method semantics reports that two active plotted method ids are numerically identical across matched case/seed/sweep rows, repair only the duplicated method dispatch or benchmark implementation. Do not relabel one method as another and do not fabricate trend differences; implement the distinct frozen control/assumption for each active id, or preserve the solver and let the validation-plan/controller remove a redundant method from final figures.
+  - If the failure says the proposed mechanism/update is dormant, repair the implementation so the declared proposed update block actually changes the active controls listed in the algorithm-to-code contract and reports truthful update diagnostics. Do not satisfy the failure by deleting `used_*update`, `*_step_norm`, or `*_update_norm` diagnostics, and do not relabel a benchmark solution as proposed.
+  - If the proposed method is infeasible after its update, initialize from a communication/service-feasible candidate when possible, apply the proposed mechanism update, project back to the constraints, and keep the best feasible proposed state under the true evaluator.
+  - If the failure says the proposed feasible-rate is too low, repair the solver/model scaling, initialization, projection, or canonical operating point so quick validation has a meaningful feasible region. Do not solve this by marking infeasible rows feasible or by weakening the frozen constraints.
+  - If the failure says a swept metric is constant, read the exact swept path via `problem.get(...)` and ensure the y-metric equations consume it.
+  - If the exact swept path is already consumed and the selected y-metric is physically flat because the sweep does not enter an active operating regime, do not fabricate variation or change the frozen metric definition. Preserve faithful physics and make the consumed sweep diagnostics explicit; the controller must route that case to experiment-design repair rather than solver-code repair.
+  - If a responsiveness failure reports matching `actual_used_*` diagnostics but a flat physical KPI, do not delete working benchmark/proposed helper code. Only repair code if you can point to a real missing use of the swept physical value in `build_model`, `proposed_step`, or `evaluate_state`; otherwise keep the implementation faithful and surface the need for validation-plan/operating-regime revision.
+  - If the failure is a baseline/method branch error, repair dispatch and return shapes without rewriting the proposed solver.
+  - If the failure says `run_method`, `evaluate`, `method_solution`, `evaluate_state`, `proposed_step`, `baseline_solution`, or a helper calls `build_model`, remove that call from the non-`build_model` function. Use the `model` argument supplied by the harness, pass it through helper calls, or delete legacy wrapper functions that are not part of the Required interface. Do not keep `if model is None: model = build_model(...)` fallbacks in harness-facing functions.
+  - Return Python scalar metrics, finite values, and JSON-normalizable states.
+  - Do not copy `semantic_guardrails` or `forbidden_concepts` into Python source.
+  {topic_specific_repair_rules}
+
+  Current validation status:
+  {status}
+
+  Validation error detail:
+  {validation_error_text}
+
+  Phase 2.4 execution contract:
+  {phase24_execution_contract_md}
+
+  Validation plan compact summary:
+  {validation_plan_summary}
+
+  Current generated_experiment_core.py:
+  {current_plugin_code}

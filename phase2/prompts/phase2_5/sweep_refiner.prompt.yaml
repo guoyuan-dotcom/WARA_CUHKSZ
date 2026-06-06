@@ -1,0 +1,100 @@
+phase_id: phase2.5
+slug: experiment_planning
+name: missing_experiment_sweep_refiner
+variables:
+  - topic
+  - algorithm_md
+  - benchmark_definition_md
+  - experiment_plan_json
+  - available_data_summary_json
+  - phase25_experiment_summary_json
+  - deterministic_paper_sweep_plan_json
+  - missing_experiments_md
+output_schema:
+  required:
+    - status
+    - missing_for_figures
+    - notes
+template: |
+  You are refining Phase 2.4 rerun coverage for an IEEE WCL-style wireless optimization paper.
+
+  Rules:
+  - Return strict JSON only.
+  - Do not fabricate completed results.
+  - Do not change the mathematical problem objective or constraints.
+  - Do not change the predeclared KPI, benchmark family, figure claim, or y-axis metric after Phase 2.4 code has been generated.
+  - You may refine x-axis values, seed counts, and operating-regime constants only within the same Phase 2.4 claim family and executable schema paths.
+  - If the current KPI, benchmark family, or x-axis family is wrong, set `status` to `requires_phase24_design_revision` and explain what Phase 2.4 experiment-design repair must change; do not patch it here.
+  - Keep the output actionable for deterministic reruns through the existing validation-plan schema paths.
+  - Treat the paper sweep plan as the current Phase 2.4 contract-derived proposal. It can be densified or narrowed, but not turned into a different experiment story.
+  - If you change a figure's x-axis parameter or operating regime, set `replace_existing_values: true` and provide new `suggested_values`; also provide `scout_values` and `medium_values` when the promoted medium pass should not reuse the old grid.
+  - Preserve the final plotted method set declared by Phase 2.4 across final figures. If Phase 2.4 declares a candidate benchmark pool plus a selection/display policy such as `proposed_plus_one_best_practical_benchmark`, then the Phase 2.5-selected common benchmark is the final plotted benchmark set for reruns; do not require every candidate benchmark to be plotted. If Phase 2.4 explicitly declares all candidates as final plotted methods with no selection policy, then all must be runnable or you must report `requires_phase24_design_revision`.
+  - Distinguish method-set consistency from scientific gain. If the selected common benchmark is consistent across figures but the proposed method does not show positive gain, route back to Phase 2.4 experiment-design repair because the operating regime, x-axis, benchmark choice, or implementation fidelity needs redesign; do not mislabel this as merely missing candidate benchmark rows.
+  - If the proposed method loses in the current scout/medium/paper results, do not simply add more seeds. First try a physically meaningful value range within the same declared x-axis and claim family. If that cannot plausibly expose the mechanism, route back to Phase 2.4 experiment-design repair.
+  - Prefer regimes where the proposed method has positive median gain and a clear trend over the selected practical benchmark before recommending paper-scale runs.
+  - Preserve physical validity: do not suggest negative values for parameters whose names indicate weights, powers, rates, frequencies, counts, sizes, probabilities, or dimensions.
+  - Prefer smooth paper sweeps: at least 10 and preferably about 14 ordered x values for line/scatter figures, with 80 seeds per point as the minimum and 100 seeds per point as the preferred paper-mode setting.
+  - Also provide a scout subset when useful: 3-5 representative x values and at least 20 seeds per point. Scout should be cheaper through fewer x-axis values, not through noisy Monte Carlo estimates.
+  - If the available current chart is weak because it has too few categories, too few x-points, too few paired successful rows, or a flat/nonresponsive metric, add valid values or request more seeds that preserve the same declared claim family.
+  - Every suggested run must map to a schema path that exists in the current validation data or validation plan.
+  - Refine toward clean paper figures: ordered line plots when possible, no plotted error bars or uncertainty bands unless explicitly requested, and no "mean", "average", "over seeds", or "standard error" language in axes, legends, titles, or captions.
+  - Keep `error_display` as `"none"` for final paper figures; do not request CI, standard-error, standard-deviation, IQR, cap, stem, or uncertainty-band styling.
+  - Use notation-first labels in recommendations, such as `$P_{\max}$`, `$b$`, `$\epsilon$`, `$\beta/\alpha$`, the defined objective symbol such as `$\psi$`, `$R_{\mathrm{sum}}$`, and `$P_{\mathrm{DC}}$`.
+  - Do not introduce a new worst-case-utility alias unless that symbol is explicitly defined in the paper's mathematical notation.
+  - If a figure is noisy, recommend more seeds or a better parameter regime; do not compensate by adding error bars to the final figure.
+
+  Topic:
+  {topic}
+
+  Algorithm summary:
+  {algorithm_md}
+
+  Benchmark summary:
+  {benchmark_definition_md}
+
+  Experiment plan JSON:
+  {experiment_plan_json}
+
+  Available data summary JSON:
+  {available_data_summary_json}
+
+  Current Phase 2.5 experiment summary JSON:
+  {phase25_experiment_summary_json}
+
+  Deterministic paper sweep plan JSON:
+  {deterministic_paper_sweep_plan_json}
+
+  Missing experiments markdown:
+  {missing_experiments_md}
+
+  Return JSON with this schema:
+  {
+    "status": "needs_more_phase24_runs",
+    "missing_for_figures": [
+      {
+        "figure_id": "figure_1",
+        "required_sweep_param": "example_param",
+        "available_points": 0,
+        "required_min_points": 10,
+        "suggested_values": [0.1, 0.2, 0.3],
+        "replace_existing_values": true,
+        "scout_values": [0.1, 0.3],
+        "scout_num_seeds": 20,
+        "medium_values": [0.1, 0.2, 0.3],
+        "medium_num_seeds": 50,
+        "suggested_num_seeds": 100,
+        "methods_to_run": ["proposed", "selected_benchmark"],
+        "claim_tested": "...",
+        "reason": "..."
+      }
+    ],
+    "notes": [
+      "..."
+    ]
+  }
+
+  Allowed status values:
+  - needs_more_phase24_runs
+  - paper_sweep_plan_refined
+  - no_refinement_needed
+  - requires_phase24_design_revision

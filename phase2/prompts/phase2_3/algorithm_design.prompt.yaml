@@ -1,0 +1,177 @@
+phase_id: phase2.3
+slug: algorithm_theory
+name: algorithm_design_markdown
+variables:
+  - wireless_feasibility_guardrail
+  - topic
+  - handoff_final_title
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - core_theory_package_md
+  - tractability_route_policy
+  - convexity_audit_md
+  - reformulation_path_md
+output_schema:
+  required:
+    - algorithm_md
+    - convergence_or_complexity_md
+template: |
+  You are writing Phase 2.3 for a wireless communications optimization agent.
+
+  Task:
+  Produce two outputs:
+  1. algorithm_md
+  2. convergence_or_complexity_md
+
+  Background rules:
+  - Stay strictly within wireless communications + optimization + 5G/6G research framing.
+  - Use Phase 2.1 and Phase 2.2 outputs as the source of truth.
+  - Treat mathematical_contract_json as a frozen mathematical interface. Do not rewrite, extend, or reinterpret the original controls/objective/constraints.
+  - The goal is a WCL-style theory section after system model and problem formulation.
+  - Be mathematically precise, but avoid excessive verbosity.
+  - The algorithm must align with the reformulation path, not invent a different problem.
+  - Success-first principle: convert the Phase 2.2 Technical Closure Plan into an implementable algorithm and scoped proof story. Do not postpone core mathematics to the ReviewAgent or to vague "standard solver" language.
+  - First-pass quality principle: the initial algorithm design must already be implementable by Phase 2.4 and explain its paper-level contribution. Do not leave missing update blocks, missing evaluators, or missing claim scope for review/repair to discover.
+  - Focus on the proposed scheme and the experiment-facing requirements needed to evaluate it fairly.
+  - Phase 2.3 is not an experiment-execution step. It may specify the benchmark family, validation principles, and claim map, but it must not choose final plotting details, concrete sweep grids, Monte Carlo settings, or paper figures.
+  - Phase 2.4 owns the concrete experiment contract. Phase 2.3 provides an implementable algorithm, baseline requirements, and any proof/complexity scope that Phase 2.4 can later implement and evaluate.
+  - Do NOT spend space on conventional scheme derivation or generic benchmark tutorials.
+  - The main goal is to explain:
+    - which tractability route was selected,
+    - how the original problem is solved directly, reformulated, decomposed, relaxed, or handled heuristically according to that route,
+    - how the resulting subproblems or updates are solved,
+    - why each subproblem is convex, directly solvable, or explicitly heuristic/proxy-based,
+    - and, only when applicable, whether a relaxation/recovery step is tight or empirically diagnosed.
+  - Do not force convergence theorems or stationarity theorems if the formulation does not naturally support them.
+  - If the algorithm text includes any theorem/lemma/proposition or claims KKT, stationarity, monotonic convergence, global optimality, exact relaxation, SDR tightness, rank-one recovery, or convex surrogate validity, it must also provide the assumptions and a checkable proof sketch in this phase. Otherwise, downgrade the statement to an implementation heuristic or empirical diagnostic.
+  - It is acceptable to avoid formal theorem claims and emphasize solvability/algorithmic tractability, but it is not acceptable to leave a theory claim as unproved future work.
+
+  {wireless_feasibility_guardrail}
+  - Lifecycle boundary:
+    - Phase 2.1 owns the original system model and original optimization problem.
+    - Phase 2.2 owns the tractability route, reformulation-only variables, and convexity audit.
+    - Phase 2.3 owns the proposed algorithm and proof/complexity discussion.
+    - Phase 2.3 must not modify the original optimizer, objective, constraints, or canonical notation from mathematical_contract_json.
+  - Frozen interface rules:
+    - original optimizer variables are exactly mathematical_contract.controls;
+    - derived_quantities may be used in subproblem objectives/constraints only through their definitions or valid reformulation links;
+    - reformulation-only variables introduced by Phase 2.2 remain algorithmic variables and must not be described as original design variables;
+    - parameters and random_quantities must never become optimizer variables in the original problem.
+  - The algorithm text, later Phase 2.4 code, and later experiments must be the same method. If the algorithm names a solver family or transform, Phase 2.4 must be able to implement that route or the algorithm must be honestly described as a heuristic/proxy.
+  - The algorithm text must consume every substantive item in the Phase 2.2 Technical Closure Plan: concrete modeling choice, deterministic counterpart/subproblem, proof obligation, implementation obligation, experiment observable, and allowed manuscript claim.
+  - The algorithm text must also consume the Phase 2.2 Technical Contribution Contract and resolve the active contribution mode in paper-native language.
+  - The algorithm must be more than a solver wrapper. A direct convex/conic route is acceptable only when this phase states the concrete coefficient construction, constraint blocks, physical-variable recovery/evaluation, and scoped optimality/safety statement that make the solver call meaningful.
+  - Treat the Technical Closure Plan as a generic interface, not as a topic template. Implement only the active closure dimensions present in the current artifacts: uncertainty/reliability, physical realizability, receiver/protocol information pattern, relaxation/recovery, surrogate validity, discrete/manifold handling, benchmark contrast, and KPI/evidence alignment.
+  - Before writing the algorithm, identify active closure dimensions from explicit artifacts, not keywords. Mention a closure dimension only when the current mathematical contract, signal model, route policy, or reformulation path actually uses it.
+  - Before writing the algorithm, identify the active contribution mode from explicit artifacts, not keywords. Only request theorem/proposition-level structure when the active mode actually needs it.
+  - If a term could be ambiguous, resolve it from the current model semantics. For example, a matrix variable may be a physical covariance, an intermediate relaxation, or a compact notation; the algorithm must follow the artifact-defined role rather than assuming one.
+  - Do not copy mechanisms from examples or older runs. If a mechanism is absent from the current artifacts, do not add it in the algorithm.
+  - For every active advanced mechanism, close the same implementation chain: solve the stated mathematical object, recover/evaluate the physical controls, report the relevant diagnostic, and preserve the paper-facing KPI.
+  - Equation readability is part of the method contract:
+    - do not bundle multiple independent definitions in one displayed equation;
+    - do not write chained equalities such as `a=b=c` or chained inequalities such as `a\leq b\leq c`;
+    - if several metrics must be listed, place each metric on its own displayed line or describe the secondary metric in prose.
+  - Do not introduce new physical entities, receiver classes, streams, or decision-variable blocks that are absent from the Phase 2.1 system model.
+  - Do not write that every block is a standard convex SDP unless Phase 2.2 identified the exact convex variables, constraints, and solver route.
+  - Choose the algorithm family from the current route decision, convexity audit, and reformulation path. Do not prefer any familiar route merely because it is common in wireless optimization; the selected route must be supported by the current mathematical structure.
+  - If a block is heuristic or proxy-based, call it heuristic/proxy-based and avoid KKT, stationarity, monotonicity, or exactness claims unless the notes provide the assumptions and proof.
+  - If SDR plus rank recovery/randomization is used, convergence claims must be scoped to the relaxed/surrogate objective before recovery, or replaced by empirical diagnostics.
+  - Do not use black-box placeholders such as \(\Phi_m\), "selected ambiguity model", "standard safe counterpart", or "standard conic reformulation" unless the expression/model is fully specified in the Phase 2.2 notes and repeated here in an implementable form.
+  - If robust/chance/distributionally robust constraints are part of the route, state the actual uncertainty/ambiguity model, the deterministic counterpart solved by the algorithm, and the numerical reliability diagnostic Phase 2.4 must emit.
+  - If Phase 2.2 cannot provide a concrete robust/chance counterpart, do not invent a paper theorem. Instead, scope the method as an empirical conservative approximation and make the missing proof obligation explicit so the controller can route the run back to formulation/theory repair.
+  - If matrix-valued transmit controls or lifted beam variables are controls, state the physical implementation path: covariance-domain Gaussian signaling/multi-stream transmission, explicit rank-one constraints, SDR recovery/randomization, or another scoped route. Do not imply that recovery is irrelevant without this explanation.
+  - If any auxiliary/shared/non-information/control/service signal affects a receiver metric, state the receiver/protocol information-pattern assumption that justifies the metric, or use the cancellation/joint-decoding-aware model if the receiver is assumed to know it.
+  - Convex-direct route:
+    - Do not present the contribution as merely calling CVX/CVXPY or a generic solver.
+    - State how the chosen variables and exact representation preserve the wireless mechanism and physical KPIs from problem (P0).
+    - Give a concise solver-oriented procedure: construct coefficients, solve the exact convex/conic program, recover physical variables when needed, and evaluate the frozen KPIs.
+    - Include an optimality/equivalence statement only for the stated model and representation.
+    - Include a structural or operating-regime insight when supported by the audit, such as active constraints, marginal resource prices, threshold behavior, monotonicity, or bottleneck regimes. If no such insight exists, state the limitation instead of inventing one.
+  - When useful, name algorithm-internal diagnostics such as objective trace, surrogate gap, update norm, feasibility residual, or iteration count. These are implementation observables, not the paper-facing Algorithm 1.
+
+  Topic:
+  {topic}
+
+  Inherited title:
+  {handoff_final_title}
+
+  Frozen mathematical interface from Phase 2.1:
+  {mathematical_contract_json}
+
+  System model:
+  {system_model_md}
+
+  Problem formulation:
+  {problem_formulation_md}
+
+  Core theory package:
+  {core_theory_package_md}
+
+  Controller tractability route policy:
+  {tractability_route_policy}
+
+  Convexity audit:
+  {convexity_audit_md}
+
+  Reformulation path:
+  {reformulation_path_md}
+
+  Output requirements:
+  - Return valid JSON only.
+  - Keys must be exactly:
+    - algorithm_md
+    - convergence_or_complexity_md
+  - Both values must be markdown strings.
+
+  The algorithm markdown should include:
+  - a compact subsection-style writeup for the proposed scheme
+  - only the reformulation or surrogate objects needed by the proposed algorithm
+  - do not restate the original system model, original objective, original constraints, or the previous section's convexity/technical-difficulty diagnosis
+  - do not open by explaining why the original problem is nonconvex or hard; the preceding System Model and Problem Formulation section already owns that explanation
+  - if a system-model quantity is needed, refer to it as previously defined and introduce only a compact algorithmic shorthand when it prevents long expressions
+  - start with a compact `Contribution mode:` sentence that states whether the current method is an exact mapping, safe counterpart, iterative decomposition, relaxation with recovery, or heuristic/empirical search, and what that implies for proof scope
+  - the introduced auxiliary / lifted / relaxed variables
+  - the sequence of subproblems
+  - why each subproblem is convex or otherwise directly solvable
+  - for any surrogate/proxy block, the exact auxiliary variables and the reason the subproblem is convex/concave; if this cannot be shown, label the update as heuristic
+  - never describe an update block as convex merely because a common algorithmic template exists; state the fixed variables, surrogate conditions, or proof obligations needed for convexity
+  - the overall algorithm flow
+  - a distinct compact paper-facing "Algorithm flow" block written as 4-7 numbered executable steps, not only prose
+  - the "Algorithm flow" must be route-aware:
+    - for exact_model_to_solver_mapping or safe_counterpart_or_certification, write a procedure with model-specific preprocessing, counterpart construction, solve, physical interpretation/recovery, and KPI/guarantee evaluation;
+    - for iterative_surrogate_or_block_decomposition, include initialization, update order, stopping rule, and final physical evaluation;
+    - for relaxation_with_recovery, include relaxed solve, recovery/randomization/projection, and post-recovery feasibility or KPI evaluation;
+    - for heuristic_or_empirical_search, include candidate generation/update, acceptance or selection rule, and final best-feasible return;
+  - do not fabricate an iteration loop for a direct one-shot convex/conic method
+  - include only method-level steps: form coefficients or surrogates, solve the stated subproblem/update blocks, check the original constraints or objective when needed, and return the optimized physical variables/KPIs
+  - for a direct conic method, the flow should normally be: construct model-specific margins or coefficients, assemble the exact/scoped conic constraints, solve the named problem, recover or interpret physical controls, verify original KPIs/reliability diagnostics, and return the paper-facing metrics
+  - a direct-route flow must not collapse to only "assemble problem, solve, return"; it must include at least one nontrivial model-specific construction step and one post-solve interpretation or verification step
+  - do not put generic solver internals in the flow, such as primal/dual residual loops, homogeneous self-dual embeddings, line-search details, step-size rules, phase-I procedures, objective traces, surrogate gaps, or iteration counters, unless one of them is the actual novel algorithmic contribution
+  - enough method-level granularity for the LaTeX phase to convert the flow into exactly one concise IEEE `algorithm` environment without inventing missing steps
+  - a short "closure checklist" paragraph or table showing how the algorithm satisfies the Phase 2.2 modeling, proof, implementation, and experiment obligations
+  - a short stopping rule only when the proposed method itself is iterative; for a direct convex/conic route, state that the solver returns the optimizer and feasibility status instead of inventing an iteration loop
+  - a brief complexity note only if useful
+
+  The convergence_or_complexity markdown should include:
+  - only the most meaningful theoretical discussion to keep in the paper
+  - keep solver-diagnostic details out of the paper-facing algorithm narrative; residuals, objective traces, certificates, and iteration counters may be implementation diagnostics, not paragraph-level method contributions
+  - include convergence, monotonicity, stationarity, or optimality only when the assumptions and proof sketch are explicitly available
+  - if the active contribution mode does not require a standalone proof object, say so explicitly and keep the discussion at the scoped equivalence, safety, recovery, or implementation level
+  - for convex_direct, prefer exact-equivalence, solver complexity, feasibility/Slater conditions, and structural insight over artificial iterative convergence claims
+  - if relaxation is used, whether tightness should be shown
+  - if exact reformulation is used, what equivalence or validity point should be justified
+  - if a surrogate or majorization/minorization method is used, what surrogate properties matter
+  - if rank recovery, randomization, or heuristic local refinement is used, explicitly state that global/KKT/stationary guarantees do not automatically survive that step unless a proof is provided
+  - a short complexity discussion if it is informative
+  - if none of these points are strong enough, say so explicitly instead of inventing theory
+  - if the contribution is mainly resource minimization under QoS/reliability constraints, describe the guarantee as resource-efficiency for the scoped feasible model rather than as novelty of transmit-power minimization itself
+
+  Length guidance:
+  - algorithm_md: about 350-650 words
+  - convergence_or_complexity_md: about 150-350 words
+
+  Before returning, verify internally:
+  1. Phase 2.4 can implement the method without inventing a new algorithm.
+  2. The proof/complexity text scopes every claim to the route actually described.
+  3. The algorithm explains why the selected method should improve the paper KPI in a plausible operating regime.

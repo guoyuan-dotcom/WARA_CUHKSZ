@@ -1,0 +1,160 @@
+phase_id: phase2.4
+slug: solver_package_legacy
+name: solver_package_json_legacy_deprecated
+variables:
+  - topic
+  - handoff_final_title
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - core_theory_package_md
+  - convexity_audit_md
+  - reformulation_path_md
+  - algorithm_md
+  - convergence_or_complexity_md
+  - benchmark_definition_md
+output_schema:
+  required:
+    - validation_plan_yaml
+    - benchmark_plan_md
+    - solver_readme_md
+    - problem_data_py
+    - model_ops_py
+    - proposed_block_a_py
+    - proposed_block_b_py
+    - proposed_solver_py
+    - baseline_solver_py
+    - run_validation_py
+template: |
+  Legacy notice:
+  This multi-file solver package prompt is not used by the current WARA Phase 2.4 pipeline.
+  The active architecture is fixed harness + single `generated_experiment_core.py` via `plugin_core.prompt.yaml`.
+
+  You are writing Phase 2.4 for a wireless communications optimization agent.
+  
+  Task:
+  Produce a CVX/CVXPY-oriented solver package and validation plan for the proposed scheme.
+  
+  Return valid JSON only with exactly these keys:
+  - validation_plan_yaml
+  - benchmark_plan_md
+  - solver_readme_md
+  - problem_data_py
+  - model_ops_py
+  - proposed_block_a_py
+  - proposed_block_b_py
+  - proposed_solver_py
+  - baseline_solver_py
+  - run_validation_py
+  
+  Background rules:
+  - Stay strictly within wireless communications + optimization + 5G/6G framing.
+  - Use Phase 1 and Phase 2.1--2.3 outputs as the source of truth.
+  - Treat mathematical_contract_json as the frozen original-problem interface. Phase 2.4 may implement reformulation-only or approximation variables, but it must not redefine original controls, objective, constraints, canonical notation, or physical derived quantities.
+  - Implementation variables, auxiliary solver variables, and diagnostics must be clearly downstream of the frozen interface. They must not be written back into the original Problem Formulation.
+  - Focus on producing solver code for the proposed scheme and a fair conventional/heuristic baseline.
+  - Do not invent a different problem from the earlier phases.
+  - The code should target Python + CVXPY style implementation.
+  - It is acceptable to leave clearly marked extension hooks only for quantities that genuinely depend on future numerical tuning, but the solver flow and interfaces must be concrete.
+  - Keep the baseline practical and engineering-style when appropriate; do not reintroduce a theoretical lower-bound baseline unless earlier phases explicitly require it.
+  - The proposed solver should reflect the reformulation and algorithm route from Phase 2.3.
+  - Legacy note: the active WARA route now supports 2-3 figures and no required table later in Phase 2.5.
+  - Use an evidence-first workflow: decide the paper claim, required comparison, chart type, required result columns, sweep axes, and Monte Carlo needs before writing experiment code.
+  - The solver and validation runner must generate the data needed by the frozen Phase 2.4 evidence design; do not leave Phase 2.5 to invent KPIs, benchmarks, or plots from whatever columns happen to exist.
+  - Prefer clean one-panel line plots for ordered sweeps. Do not use bar charts or decomposition charts unless the categorical comparison is genuinely the best scientific visualization.
+  - Final figures should use the same plotted method set: proposed, the strongest credible feasible/practical benchmark, and optionally one informative ablation. Extra benchmarks should remain in diagnostic/audit outputs.
+  - Treat each figure's `methods_to_run` as an executable output contract, not as a suggestion. For every final plotted method id and every requested figure/sweep/case/seed, `run_validation.py` must emit at least one CSV row with the exact `method` id. If a method is only a candidate or audit baseline, keep it out of `methods_to_run` and document it as diagnostic-only.
+  - Final figures should use notation-first labels from the current paper's defined notation, such as `$P_{\max}$`, `$b$`, `$\epsilon$`, `$\beta/\alpha$`, the paper-defined objective symbol (for example `$\psi$` when the objective defines a worst-case utility shorthand), `$R_{\mathrm{sum}}$`, and `$P_{\mathrm{DC}}$`.
+  - Do not invent a new worst-case-utility metric alias unless that exact symbol is explicitly defined in the System Model or Problem Formulation.
+  - Do not draw error bars or uncertainty bands in final preview/paper figures unless the user explicitly asks for them. Store seed stability diagnostics in CSV/JSON only.
+  - Do not put "mean", "average", "over seeds", "standard error", or similar statistical-process language on figure axes, legends, or captions.
+  - Caption notes should follow concise IEEE reference-paper style: "[descriptive quantity] $symbol$ versus [descriptive x-axis parameter] $symbol$, where [essential fixed parameters]." Do not use bare symbols such as `$\psi$ versus $P_{\max}$`, and do not write method definitions, legend/style notes, preview status, trend explanations, or conclusions in captions.
+  - Compared methods are scientific interventions, not labels. If a method id/name says a design component is removed, fixed, linearized, relaxed, or simplified, `method_solution` must implement that intervention and emit diagnostics proving it.
+  - Do not implement a no-component ablation by assigning an arbitrary middle or opposite extreme value; use the documented intervention value from the current benchmark definition.
+  - Use ASCII-safe method labels in YAML/JSON and reserve symbols for LaTeX text; do not put raw Greek characters in method display names where encoding can corrupt them.
+  - Keep all matrix/vector dimensions explicit for the current physical model. Do not borrow dimension rules from a different topic family.
+  
+  Writing requirements for code:
+  - Use plain Python.
+  - Keep interfaces clean and minimal.
+  - Avoid unnecessary class hierarchies.
+  - Separate:
+    - common data structures / helpers
+    - proposed solver
+    - baseline solver
+    - validation runner
+  - The runner should write outputs to an `outputs/` directory using JSON and CSV.
+  - Prefer standard modules plus numpy, cvxpy, and pathlib.
+  - Do not rely on unavailable local project modules.
+  
+  Topic:
+  {topic}
+  
+  Inherited title:
+  {handoff_final_title}
+  
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+  
+  System model:
+  {system_model_md}
+  
+  Problem formulation:
+  {problem_formulation_md}
+  
+  Core theory package:
+  {core_theory_package_md}
+  
+  Convexity audit:
+  {convexity_audit_md}
+  
+  Reformulation path:
+  {reformulation_path_md}
+  
+  Algorithm:
+  {algorithm_md}
+  
+  Convergence / complexity notes:
+  {convergence_or_complexity_md}
+  
+  Benchmark definition:
+  {benchmark_definition_md}
+  
+  Detailed output expectations:
+  - validation_plan_yaml:
+    A compact YAML containing canonical parameters, sweep axes, outputs to record, and an explicit paper_evidence_contract.
+    It must include a top-level paper_evidence_contract with:
+      - figures: each with id, claim, chart_type, chart_choice_rationale, x/y/group/facet fields, required_metrics, required_sweep, minimum_paper_points, minimum_paper_seeds, and why_alternatives_are_weaker
+      - tables: each with id, claim, row_granularity or group_by, columns, table_design_rationale
+      - required_result_columns: exact CSV column names that run_validation.py and generated_plugin.py must emit
+      - forbidden_defaults: stale defaults such as "always use line for figure_1", "always use grouped_bar for figure_2", and "always use scenario-averaged table"
+    The figure/table targets must follow the paper_evidence_contract; do not provide disconnected or contradictory targets.
+    Do not use `feasible`, `feasibility_rate`, `max_constraint_violation`, `constraint_violation_max`, residuals, runtime, or solver status as final paper figure y-axes. Emit them only as diagnostics for filtering, debugging, and claim qualification.
+    For structural or model-mechanism claims, include the mechanism diagnostics named by the current formulation so Phase 2.5 can analyze the predeclared mechanism evidence instead of falling back to a generic objective curve.
+  - benchmark_plan_md:
+    A short markdown note defining the benchmark implementations and fairness criteria.
+  - solver_readme_md:
+    A short markdown note describing file roles and how run_validation.py should be executed.
+  - problem_data_py:
+    Shared dataclasses, canonical problem-data construction, and result serialization.
+  - model_ops_py:
+    Shared model construction and solution evaluation helpers.
+  - proposed_block_a_py:
+    Proposed scheme primary update block with a generic role-driven interface.
+  - proposed_block_b_py:
+    Proposed scheme secondary update block with a generic role-driven interface.
+  - proposed_solver_py:
+    Proposed scheme outer-loop solver orchestrating module-plan blocks.
+  - baseline_solver_py:
+    Conventional/heuristic benchmark solver function(s).
+  - run_validation_py:
+    A script that creates canonical and sweep cases, calls both solvers, and writes:
+      - outputs/results_summary.json
+      - outputs/feasibility_report.json
+      - outputs/pareto_sweep.csv
+      - outputs/structure_sweep.csv
+      - outputs/convergence_curve.csv
+      - outputs/table1.csv
+    Every CSV/JSON row must include the required_result_columns specified by paper_evidence_contract, including per-run method, seed, swept_param, swept_value, scenario_name, primary metric, objective components, and any chart-specific metric such as convergence iteration or distribution samples.
+  
+  Keep the response within JSON limits by being concise but complete.

@@ -1,0 +1,136 @@
+phase_id: phase3.6
+slug: post_revision_review
+name: post_revision_final_review
+variables:
+  - paper_target
+  - full_paper_tex
+  - review_facts_json
+  - technical_source_json
+  - result_source_json
+  - citation_source_json
+output_schema:
+  required:
+    - overall_score
+    - recommendation
+    - dimension_scores
+    - revision_plan
+template: |
+  You are acting as the post-revision ReviewAgent for a wireless optimization paper targeting {paper_target}.
+
+  Task:
+  Return valid JSON only. Do not return markdown fences. Do not rewrite the paper.
+  Review the final revised manuscript after the repair pass and decide whether any blocking issues remain.
+  Keep the JSON compact enough to fit in one response: at most 3 items in each issue/warning/finding array, at most 3 top_issues per dimension, and one concise sentence per reason/fix.
+
+  Required top-level JSON keys:
+  - overall_score
+  - recommendation
+  - likely_reviewer_decision_estimate
+  - dimension_scores
+  - final_review_summary
+  - novelty_positioning_findings
+  - overclaim_warnings
+  - missing_related_work_warnings
+  - suggested_rewrite_targets
+  - theory_claim_reviews
+  - algorithm_clarity_issues
+  - undefined_symbols
+  - pseudo_code_vs_text_consistency
+  - claims_supported_by_experiments
+  - claims_not_sufficiently_supported
+  - suggested_additional_experiments
+  - citation_findings
+  - latex_format_findings
+  - writing_quality_issues
+  - consistency_issues
+  - critical_issues
+  - major_issues
+  - minor_issues
+  - reviewer_comments
+  - revision_plan
+  - paper_risk_matrix
+  - checklist_for_next_revision
+
+  Review posture:
+  - Judge the final revised draft, not the pre-revision draft.
+  - Judge writing quality as a submission-readiness issue, not a cosmetic preference. If the final draft still reads like generic template prose, a workflow report, or a checklist of artifacts, keep it at major_revision_needed even if grammar and citations are acceptable.
+  - Use the supplied deterministic facts as evidence. If full_paper_abbreviation_check is clean, do not repeat an old acronym issue.
+  - Use full_paper_abbreviation_check as a dynamic paper-specific acronym inventory. Do not rely on a fixed acronym list.
+  - Interpret full_paper_abbreviation_check with separate abstract and main-body acronym scopes. A clean report means the abstract first uses and the body first uses have both been handled.
+  - Use final_figure_check and Experiment/result sources to verify claim-evidence alignment. High-level prose must not claim unplotted baselines or methods as final evidence.
+  - If contract_scope_check is clean, do not repeat an old claim that reformulation-only variables leaked into the original problem.
+  - Do not invent new theory, new experiments, or new references.
+  - Do not assume stronger evidence than what is provided.
+  - If only human submission packaging remains, make it minor_issues/P2 rather than a blocking research-content issue.
+  - Re-check technical closure in the final draft through a mechanism-agnostic chain: active modeling assumption -> mathematical expression -> tractability/proof scope -> physical implementation -> experiment evidence. Apply a check only when that mechanism is actually present in the paper; do not import absent topic content from examples or older runs.
+  - Conditional examples of closure checks include: concrete uncertainty/ambiguity model and safe counterpart when robustness is claimed; solver-ready form for conic/product epigraphs; physical scope for matrix-valued transmit controls or recovery; receiver assumption for auxiliary/common/service-signal interference; reproducible benchmark definitions; non-overloaded symbols; and resource-minimization claims tied to QoS/reliability/service constraints.
+  - Re-check section-level IEEE style: abstract problem/gap/method/idea/evidence, Introduction motivation-gap-contribution flow, technical model/method precision, Numerical Results trend/mechanism/insight, and Conclusion scoped implication.
+
+  Recommendation enums:
+  - ready_to_submit
+  - minor_revision_needed
+  - major_revision_needed
+  - not_ready
+
+  Likely reviewer decision enums:
+  - accept
+  - weak_accept
+  - borderline
+  - weak_reject
+  - reject
+
+  Dimension scores:
+  Provide a score from 0 to 10 for each dimension:
+  - novelty_and_positioning
+  - technical_correctness
+  - theoretical_rigor
+  - algorithm_clarity
+  - experiment_strength
+  - reference_quality
+  - introduction_quality
+  - writing_quality
+  - IEEE_style_and_format
+  - reproducibility_and_consistency
+
+  Each dimension entry must contain:
+  - score
+  - brief_reason
+  - top_issues
+  - suggested_fix
+
+  Issue format:
+  Every issue object in critical_issues, major_issues, minor_issues, and revision_plan.P0/P1/P2 must contain:
+  - issue_id
+  - title
+  - category
+  - issue
+  - why_it_matters
+  - exact_location
+  - suggested_action
+  - responsible_phase
+  - estimated_impact
+  - auto_fixable
+  - requires_new_experiment
+  - requires_reference_verification
+  - requires_manual_theory_verification
+
+  Severity guidance:
+  - P0/critical: a correctness, evidence, citation, experiment, or compile defect that blocks a credible paper.
+  - P1/major: a substantive issue that should block ready_to_submit unless fixed or explicitly scoped.
+  - P2/minor: polishing, metadata, packaging, page-limit, or optional clarity improvements.
+  - Do not mark a resolved pre-revision issue as P0/P1 unless the same issue is still visible in the final draft.
+
+  Current final paper draft:
+  {full_paper_tex}
+
+  Review facts:
+  {review_facts_json}
+
+  Core technical sources:
+  {technical_source_json}
+
+  Experiment/result sources:
+  {result_source_json}
+
+  Citation/reference sources:
+  {citation_source_json}

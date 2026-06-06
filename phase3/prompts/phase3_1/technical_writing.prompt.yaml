@@ -1,0 +1,128 @@
+phase_id: phase3.1
+slug: technical_sections_drafting
+name: ieee_wcl_unified_technical_sections
+variables:
+  - topic
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - core_theory_package_md
+  - convexity_audit_md
+  - reformulation_path_md
+  - algorithm_md
+  - convergence_or_complexity_md
+  - benchmark_definition_md
+output_schema:
+  required:
+    - system_model_problem_formulation_tex
+    - proposed_solution_tex
+    - proposed_section_title
+template: |
+  You are writing the paper-facing technical sections for an IEEE Wireless Communications Letters manuscript.
+  Phase 3.1, the first paper-writing checkpoint, writes the two technical paper sections together so notation, problem scope, and proposed method stay aligned.
+
+  Return valid JSON only with exactly these keys:
+  - system_model_problem_formulation_tex
+  - proposed_solution_tex
+  - proposed_section_title
+
+  The output will be inserted into a two-column IEEE letter. Write polished, compact LaTeX, not notes.
+
+  Source-of-truth rules:
+  - Treat the frozen mathematical contract as immutable. Do not change the topic, controls, objective, constraints, assumptions, or algorithm route.
+  - Do not change the mathematics. Improve presentation and technical closure, but never repair prose by silently changing the original model or optimization problem.
+  - Do not invent a missing theorem, ambiguity set, recovery condition, receiver assumption, or proof. If the provided artifacts do not close a claim, state the scope conservatively.
+  - First-pass authoring principle: write the section as if it should pass review before any downstream reviewer/repair stage, rather than leaving known technical gaps for later.
+  - Do not mention agents, phases, prompts, generated code, draft status, or internal files.
+  - Do not emit citations, preamble, title, abstract, introduction, numerical results, conclusion, or bibliography.
+
+  Writing style:
+  - Use concise IEEE WCL prose. Each paragraph should do one job: model setup, KPI derivation, problem formulation, tractability transition, algorithm construction, or scoped property.
+  - Acronym discipline applies to the whole output. Every technical acronym or abbreviation, including hyphenated method labels and compound wireless acronyms, must be defined on first prose use as `full descriptive name (ABBR)`. If the supplied artifacts do not give a trustworthy full form, use the full descriptive phrase and avoid the abbreviation.
+  - These technical sections belong to the main-body acronym scope. Define an acronym once if its first main-body use appears in this output; if the same acronym is already defined earlier in the assembled main body, use the acronym alone or the full descriptive phrase without another parenthetical definition.
+  - Do not define the same abbreviation twice in one local section. After the first definition, use either the abbreviation alone or the full descriptive phrase consistently.
+  - Avoid generic filler such as "the problem is challenging" or "the method is effective". Name the actual coupling, structural property, or operating regime.
+  - Use natural transitions from signal model to KPI, KPI to problem (P0), and problem (P0) to the proposed method.
+  - The System Model must read like restrained IEEE prose, not a tutorial and not an agent-generated list of equations. Introduce each displayed relation with a concise mathematical lead-in such as "is given by", "can be written as", "is expressed as", "we obtain", "we define", "we denote", or "is modeled as" when appropriate.
+  - Use notation-defining prose such as "we denote ... by ...", "... is denoted by ...", and "where ... denotes ..." to define symbols near first use. Avoid dumping all variables in one paragraph; introduce symbols where they are used.
+  - Avoid repetitive bare-definition patterns such as "The signal is", "The observation is", "The metric is", and "The utility is" immediately before a display. Prefer paper-facing transitions such as "the received signal at user \(k\) is given by" or "the resulting SINR can be written as".
+  - Do not mechanically use the same lead-in before every equation; vary the transition according to whether the displayed relation is a channel model, received signal, derived KPI, resource constraint, or optimization objective.
+  - When one sentence introduces two displayed relations, make the mapping explicit in IEEE style: put `\text{and}\quad` at the beginning of the second align line, end the second relation with a comma, and write `respectively.` immediately after the display. Do not write a bare "define", "is given by", or "with the tight updates" before an `align` block containing unrelated definitions or updates.
+  - Do not explain every equation after it is displayed; add post-equation interpretation only when it resolves a modeling ambiguity.
+  - Avoid tutorial-style exposition; write for a communications-theory reviewer, not for a beginner.
+  - Avoid emphatic or AI-like adverbs and connectors such as "critically", "importantly", "specifically", "formally", and "central".
+  - Avoid meta-writing such as "this provides the quantities needed below" or "this exposes the tradeoff".
+  - Prefer short technical sentences over long explanatory clauses.
+  - Keep equations readable in one IEEE column. Do not split compact equations only because they contain a plus sign.
+
+  System Model and Problem Formulation section:
+  - Output subsection-level LaTeX only; it will be wrapped by `\section{System Model and Problem Formulation}`.
+  - Define the physical system, variables, received/controlled quantities, and paper-facing KPI using the notation from the contract.
+  - Follow the narrative order: context/topology, channel or propagation model, transmitted/received signal, controllable variables, performance quantities, assumptions, and then a bridge sentence to the optimization formulation.
+  - The first paragraph must make the architecture unambiguous before the first equation appears.
+  - Introduce symbols where they are used. For example, write "Let \(\mathcal K\) denote the user set" or "the beamformer for user \(k\) is denoted by \(\mathbf w_k\)" before relying on the symbol in an equation.
+  - Do not claim a model is standard or obvious without defining the exact quantity used in this paper.
+  - Preserve the coordinate convention from the mathematical contract and Phase 2.1 drafts. For mobility, deployment, movable-element, distance, or path-loss models, write either horizontal coordinates plus altitude/height, or full-dimensional coordinates with embedded lower-dimensional nodes; do not mix dimensions or add altitude twice.
+  - Derived quantities must be functions of the physical controls, not new optimizer variables.
+  - Use `equation` for ordinary definitions. Reserve `subequations` for optimization problems only.
+  - If an ordinary `align` block contains multiple definitions, its lead-in must explicitly name the objects and use "respectively" or a clear "define ..., and ..." construction; otherwise split the definitions into separate prose-and-equation pairs.
+  - The problem-formulation part must begin with one compact explanatory paragraph stating what engineering decision is being made and what tradeoff or requirement it enforces.
+  - The formal problem must use a numbered optimization layout so that the objective and individual constraints are referenceable. Do not use `align*`, `equation*`, or an unnumbered display for problem (P0).
+  - Formulate the original problem as problem (P0) using `subequations` plus `align`; use compact optimizer notation when needed.
+  - Show the explicit problem name with `\text{(P0)}` or `\text{($\mathcal{P}_0$)}` on the objective line, while still allowing LaTeX to number the objective and constraints as subequations.
+  - The objective line and every constraint line must have a label. Use constraint-oriented labels such as `\label{obj:p0}`, `\label{con:p0_power}`, `\label{con:p0_rate}`, and `\label{con:p0_service}`. Do not use `eq:p0_*` labels.
+  - In prose, refer to the original optimization directly as "problem (P0)" or "(P0)", not as an equation number. Do not write `Problem \eqref{...}` or `problem \eqref{...}` for the optimization problem itself.
+  - Put only one primary equality or inequality on each objective/constraint line. Put long index domains in the surrounding prose when this keeps lines readable.
+  - Do not write objective and constraints as disconnected prose. The constraints should appear in the same formal problem display when they remain readable under the one-relation-per-line rule.
+  - After the display, explain the role of each constraint group in one concise paragraph and then name the dominant convexity/tractability status or technical difficulty.
+  - End this section with a compact convexity/technical-difficulty paragraph that accurately states the active reason the method is needed. If the formulation is convex/direct after a valid transformation, say so; do not invent nonconvexity.
+
+  Proposed-method section:
+  - Output subsection-level LaTeX only; do not include a top-level `\section`.
+  - Start with one short unheaded bridge paragraph, e.g., `To solve problem (P0), we ...`.
+  - resolve the active contribution mode from the artifacts: exact model-to-solver mapping, certified/safe counterpart, iterative surrogate/decomposition, relaxation with recovery, or heuristic/empirical search.
+  - infer the active technical-closure obligations from the frozen artifacts, not from isolated keywords. Proof obligations are conditional: include proof/sketch/scope only when the current contribution needs it and the inputs support it.
+  - Explain the method as a research contribution, not as a solver manual. Include the model-specific construction, update/solve route, and physical KPI verification path.
+  - If the method uses movement/propulsion/service-cost models or perspective/epigraph transformations, state only the properties supported by the artifacts and do not introduce unsupported convexity or convergence claims.
+  - Apply technical-closure obligations only when the current artifacts actually contain the corresponding structure. For example: matrix transmit controls need implementation/recovery scope; auxiliary/common/service waveforms inside receiver metrics need a decode/cancel/treat-as-noise assumption; safe/robust/chance constraints need their concrete deterministic counterpart if claimed.
+  - Include exactly one `algorithm` environment with `[!t]`, label `alg:solution_proposed`, and 4--7 concise `\State` lines using `\Require` and `\Ensure`.
+  - The algorithm block must match the active contribution mode and act as a compact paper-facing method skeleton. Do not fill it with generic residual loops, line-search logs, or solver internals unless those are the contribution; do not let the block collapse to only "assemble problem, solve, return".
+  - Do not repeat the System Model or the convexity/technical-difficulty diagnosis inside the proposed-method section.
+  - After the algorithm block, include at most one concise scope/complexity paragraph if supported by the inputs.
+
+  Consistency checks before returning:
+  - No duplicated labels.
+  - No symbol is first defined twice.
+  - No reformulation-only variable appears in the original problem unless explicitly scoped as an algorithmic auxiliary in the proposed section.
+  - The proposed section refers to problem (P0) textually and does not re-diagnose the system model.
+  - The algorithm returns physical variables/KPIs, not internal diagnostic quantities.
+
+  Topic:
+  {topic}
+
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+
+  System model facts:
+  {system_model_md}
+
+  Original problem facts:
+  {problem_formulation_md}
+
+  Tractability notes:
+  {core_theory_package_md}
+
+  Convexity audit:
+  {convexity_audit_md}
+
+  Reformulation path:
+  {reformulation_path_md}
+
+  Algorithm design:
+  {algorithm_md}
+
+  Convergence / complexity notes:
+  {convergence_or_complexity_md}
+
+  Benchmark / experiment-design context:
+  {benchmark_definition_md}

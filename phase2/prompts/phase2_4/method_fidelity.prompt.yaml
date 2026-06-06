@@ -1,0 +1,90 @@
+phase_id: phase2.4
+slug: method_fidelity_contract
+name: algorithm_to_code_contract
+variables:
+  - topic
+  - mathematical_contract_json
+  - algorithm_md
+  - benchmark_definition_md
+  - phase24_execution_contract_md
+  - validation_plan_summary
+output_schema:
+  required:
+    - algorithm_family
+    - solver_requirements
+    - active_controls
+    - required_update_blocks
+    - required_physical_kpis
+    - forbidden_new_quantities
+    - required_behavior
+    - forbidden_substitutions
+template: |
+  You are deriving the Phase 2.4 algorithm-to-code fidelity contract for a wireless optimization experiment.
+
+  Return valid JSON only. Do not return markdown or prose.
+
+  Purpose:
+  - Read the frozen mathematical contract, Phase 2.3 algorithm, benchmark plan, execution contract, and validation-plan summary.
+  - State what the generated experiment code must implement.
+  - Do not classify the topic by hard-coded wireless categories.
+  - Do not infer required controls from keyword matches alone.
+  - Every required control, update block, solver path, diagnostic, KPI, and forbidden quantity must be grounded in the supplied frozen artifacts.
+
+  Required JSON shape:
+  {
+    "source": "llm_algorithm_to_code_contract",
+    "algorithm_family": "short family name from the supplied algorithm/execution contract",
+    "solver_requirements": {
+      "requires_solver": true,
+      "solver_family": "none | cvxpy | scipy | closed_form | simulation_only | other",
+      "required_code_markers": ["optional exact source-code markers when a solver is required"],
+      "reason": "one sentence grounded in the supplied artifacts"
+    },
+    "active_controls": [
+      {
+        "name": "human-readable control name",
+        "source_variable": "symbol or variable name from the frozen artifacts",
+        "role": "what this control changes in the algorithm",
+        "update_required": true,
+        "diagnostic_fields": ["generated-code diagnostic fields that prove this control was updated"]
+      }
+    ],
+    "required_update_blocks": [
+      {
+        "id": "stable snake_case block id",
+        "description": "what the block must do",
+        "controls": ["source variables updated by this block"],
+        "solver_path": "solver or update path required by the artifacts",
+        "required_diagnostics": ["diagnostic fields that should be emitted"]
+      }
+    ],
+    "required_physical_kpis": ["paper-facing KPI names that must be computed from the evaluator"],
+    "forbidden_new_quantities": ["metrics, controls, or physical quantities not present in the frozen artifacts and therefore forbidden"],
+    "required_behavior": ["implementation-level obligations"],
+    "forbidden_substitutions": ["ways the code must not silently replace the declared algorithm"]
+  }
+
+  Rules:
+  - If the algorithm declares a solver-backed subproblem, set solver_requirements.requires_solver to true and name the solver family.
+  - If the artifacts do not declare a specific control or physical quantity, do not add it just because it is common in wireless papers.
+  - If a symbol is overloaded or ambiguous, describe it using the artifact context rather than mapping it to a different wireless task.
+  - Diagnostics should use current-paper variable names where possible. Generic aliases are allowed only when they directly correspond to declared controls.
+  - Keep the JSON compact enough to be passed into a later code-generation prompt.
+
+  Topic:
+  {topic}
+
+  Frozen mathematical contract:
+  {mathematical_contract_json}
+
+  Phase 2.3 algorithm:
+  {algorithm_md}
+
+  Benchmark plan:
+  {benchmark_definition_md}
+
+  Phase 2.4 execution contract:
+  {phase24_execution_contract_md}
+
+  Validation plan summary:
+  {validation_plan_summary}

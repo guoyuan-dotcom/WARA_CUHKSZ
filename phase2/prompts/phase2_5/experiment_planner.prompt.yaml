@@ -1,0 +1,221 @@
+phase_id: phase2.5
+slug: experiment_planning
+name: experiment_planner
+variables:
+  - topic
+  - validation_principles_summary
+  - system_model_md
+  - problem_formulation_md
+  - reformulation_path_md
+  - algorithm_md
+  - benchmark_definition_md
+  - phase24_evidence_contract_md
+  - validation_plan_summary
+  - available_data_summary_json
+  - phase24_summary_excerpt_json
+output_schema:
+  required:
+    - paper_target
+    - primary_metric
+    - secondary_metrics
+    - compared_methods
+    - figure_specs
+    - table_specs
+    - data_sufficiency_rules
+    - paper_claims_to_test
+    - missing_experiment_recommendations
+template: |
+  You are the Phase 2.5 evidence packager for an IEEE WCL-style wireless optimization paper.
+
+  Return STRICT JSON only.
+
+  Mission:
+  - Convert the Phase 2.4 executable evidence contract and the available results into a paper-facing evidence package.
+  - Do not redesign the experiment story after code has already been generated.
+  - Use only Phase 2.4's predeclared KPI, benchmark family, method ids, sweep ids, axis notation, and figure claims.
+  - If the current Phase 2.4 design is wrong, insufficient, or misaligned with the paper claim, report that Phase 2.4 design revision is required instead of inventing a new KPI/benchmark/figure family in Phase 2.5.
+  - Plan reruns only as scout-then-expand refinements of the predeclared figures: fewer representative x values with enough Monte Carlo seeds per value, then denser paper-quality curves for the same claim family.
+  - Tables are currently disabled. Return `table_specs: []`.
+
+  Planning logic:
+  - Start from the current Phase 2.4 contract, then check whether its predeclared sweep, metric, benchmark, and operating regime make the paper claim visible.
+  - Prefer the predeclared main performance figure plus one predeclared complementary insight figure. Add a third figure only if Phase 2.4 already declared it and it gives a distinct mechanism, robustness, feasibility-boundary, scalability, or convergence insight.
+  - A useful figure has a responsive physical y-metric, paired feasible proposed-vs-benchmark rows, enough x-axis coverage, and enough seeds to make the clean curves stable.
+  - A strong first-round plan includes a compact predeclared candidate set from Phase 2.4; Phase 2.5 may promote, defer, or request reruns, but not change the paper claim family.
+  - A weak figure is one where all curves are flat, the y-axis is only a diagnostic for a performance claim, the selected method is missing, infeasible points dominate, or the proposed gain cannot be evaluated.
+  - Scout delivery should target 3-5 representative x-points and at least 20 seeds per point. Scout is fast because the x-axis grid is small, not because Monte Carlo averaging is unreliable.
+  - Medium delivery should target about 8 x-points and about 50 seeds per point to confirm curve shape before expensive paper-mode expansion.
+  - Paper-quality delivery should target smooth experiments: at least 10 x-points and preferably 14 x-points with 80-100 seeds per point for line/scatter plots, or 5-6 representative categories and 80-100 seeds per category for categorical plots.
+  - If the promoted figure still looks jagged, seed-noisy, or visually dominated by random realization effects, recommend more seeds or a denser operating range instead of passing it to the writing phase.
+
+  Benchmark-selection policy:
+  - Each final figure should list the exact same `methods` ids whenever data allow it. Usually use two or three methods: the proposed method, one practical benchmark, and optionally one informative ablation.
+  - The plotted benchmark set should come from Phase 2.4's frozen compared_methods and figure methods. If the benchmark set is not credible, mark the contract as needing Phase 2.4 redesign rather than silently choosing a different family.
+  - Keep oracle/reference methods out of practical-gain figures unless the claim is explicitly an optimality-gap or reference-equivalence claim.
+  - If the strongest available benchmark belongs to a different mechanism, keep it in audit notes rather than letting it redefine the contribution.
+  - If a benchmark is fragile, infeasible, redundant, numerically unstable, diagnostic-only, or violates the model assumptions, keep it in audit data and explain why the Phase 2.4 design needs revision or rerun.
+  - Do not remove a valid credible benchmark merely because it beats the proposed method. If that happens, mark the figure/claim as failed or request Phase 2.4 operating-regime redesign instead of hiding the benchmark.
+
+  Figure-style policy:
+  - Final figures should be clean one-panel line plots when the x-axis is ordered. Do not use a bar chart unless a categorical comparison is genuinely the best scientific visualization.
+  - The selected plotted method set, display names, colors, marker styles, and line styles must be exactly identical across final figures.
+  - Use simple markers only: circle (`o`) for proposed, square (`s`) for the strongest practical benchmark, and triangle (`^`) for the optional ablation. Do not use stars, diamonds, crosses, plus markers, oversized markers, caps, stems, or error-bar styling.
+  - Set `error_display` to `"none"` for final figures unless the user explicitly requests uncertainty visualization. Store seed stability diagnostics in JSON/CSV, not on the plotted figures.
+  - Do not set `error_display` to `"ci95"`, `"stderr"`, `"std"`, or `"iqr"` for final paper figures. Repeated seeds are for curve stability diagnostics, not plotted confidence intervals or error bars.
+  - Use notation-first axis labels from the current paper's defined notation, not long descriptive phrases. Prefer `$P_{\max}$`, `$b$`, `$\epsilon$`, `$\beta/\alpha$`, the defined objective symbol such as `$\psi$`, `$R_{\mathrm{sum}}$`, and `$P_{\mathrm{DC}}$`.
+  - Metric display names must correspond to symbols already defined in the System Model or Problem Formulation. Do not invent a new worst-case-utility alias unless the paper already defines that exact symbol.
+  - Do not put "mean", "average", "over seeds", "standard error", or similar statistical-process language on axes, legends, titles, captions, or method display names.
+  - Caption notes should follow concise IEEE reference-paper style: "[descriptive quantity] $symbol$ versus [descriptive x-axis parameter] $symbol$, where [essential fixed parameters]." Do not use bare symbols such as `$\psi$ versus $P_{\max}$`, and do not put benchmark definitions, trend interpretation, legend/style notes, preview status, or conclusions in captions.
+  - Use paper-defined KPIs for y-axes: the optimization objective, utility, sum rate, harvested DC power, worst-user DC power, rate-energy tradeoff, or another contract-defined physical metric. Feasibility, violation, residual, runtime, convergence, and solver-status fields are diagnostics only and must not be selected as final paper figure y-axes.
+  - Prefer Figure 1 as the main performance sweep and Figure 2 as a parameter-sensitivity/insight sweep over a different meaningful model parameter.
+
+  Data contract:
+  - Use only methods, metrics, sweep parameters, and grouping keys present in the available data summary or Phase 2.4 validation contract.
+  - If current quick data are too sparse, keep the Phase 2.4 figure plan and put concrete reruns in `missing_experiment_recommendations`.
+  - Suggested reruns must include sweep path, values, seeds, methods, and the claim being tested.
+  - Do not suggest a new y-axis metric, x-axis sweep family, or benchmark family unless the recommendation is explicitly labeled as `requires_phase24_design_revision`.
+  - Use physical metrics from the current problem: rate, power, harvested energy, sensing accuracy, localization/sensing quality, energy efficiency, or other contract-defined physical KPIs as appropriate. Do not classify feasibility, violation, convergence, runtime, residual, or solver status as physical KPIs.
+  - Metric direction must match the objective and KPI semantics. Resource usage is lower-is-better; rate, utility, harvested energy, reliability, and spectral efficiency are usually higher-is-better. Solver diagnostics such as violations, gaps, runtime, and errors may qualify rows but must not drive the final paper figure selection.
+
+  Required JSON shape:
+  {
+    "paper_target": "IEEE WCL",
+    "primary_metric": {
+      "name": "objective",
+      "display_name": "Primary physical metric",
+      "higher_is_better": true
+    },
+    "diagnostic_metrics": [
+      {
+        "name": "feasible",
+        "display_name": "Feasibility rate",
+        "aggregation": "rate",
+        "optional": true,
+        "paper_figure_y_axis_allowed": false
+      }
+    ],
+    "compared_methods": [
+      {
+        "internal_name": "proposed",
+        "name": "proposed",
+        "role": "proposed",
+        "display_name_short": "Proposed",
+        "display_name_long": "Proposed method",
+        "source_of_name": "algorithm_md"
+      },
+      {
+        "internal_name": "selected_benchmark",
+        "name": "selected_benchmark",
+        "role": "main_baseline",
+        "display_name_short": "Benchmark",
+        "display_name_long": "Selected practical benchmark",
+        "source_of_name": "phase24_contract"
+      }
+    ],
+    "figure_specs": [
+      {
+        "figure_id": "figure_1",
+        "purpose": "main physical-performance claim",
+        "chart_intent": "main_comparison",
+        "chart_type": "line",
+        "chart_choice_rationale": "Why this chart, metric, sweep, and benchmark expose the claim.",
+        "primary_message": "Specific claim this figure can support or falsify.",
+        "methods": ["proposed", "selected_benchmark"],
+        "metric": {
+          "name": "objective",
+          "display_name": "$\\psi$",
+          "higher_is_better": true,
+          "aggregation": "mean"
+        },
+        "encoding": {
+          "x": {
+            "type": "numeric",
+            "field": "swept_value",
+            "sweep_param": "schema.path.to.parameter",
+            "sweep_id": "phase24_sweep_id",
+            "display_name": "$P_{\\max}$"
+          },
+          "group": {
+            "type": "method",
+            "field": "method",
+            "display_name": "Method"
+          },
+          "facet": {
+            "type": "none",
+            "field": null
+          }
+        },
+        "error_display": "none",
+        "data_requirements": {
+          "min_points": 10,
+          "preferred_points": 14,
+          "min_samples_per_group": 80,
+          "preferred_samples_per_group": 100
+        },
+        "benchmark_selection_rationale": "Why this benchmark is the clearest comparison for this figure."
+      }
+    ],
+    "table_specs": [],
+    "data_sufficiency_rules": {
+      "scout_x_points_per_figure": 4,
+      "scout_seeds_per_point": 20,
+      "medium_x_points_per_figure": 8,
+      "medium_seeds_per_point": 50,
+      "min_x_points_per_figure": 10,
+      "preferred_x_points_per_figure": 14,
+      "min_seeds_per_point": 80,
+      "preferred_seeds_per_point": 100,
+      "max_publication_figures": 3,
+      "min_publication_figures": 2
+    },
+    "paper_claims_to_test": [
+      {
+        "claim": "Main empirical claim to test",
+        "required_evidence": "Which figure and metric support it",
+        "failure_mode": "What result would weaken the claim"
+      }
+    ],
+    "missing_experiment_recommendations": [
+      {
+        "claim": "Claim needing more data",
+        "sweep_param": "schema.path.to.parameter",
+        "suggested_values": [0.0, 0.5, 1.0],
+        "suggested_num_seeds": 100,
+        "methods_to_run": ["proposed", "selected_benchmark"],
+        "reason": "Why this run is needed for a smooth paper-ready figure"
+      }
+    ]
+  }
+
+  Topic:
+  {topic}
+
+  Phase 2.4 evidence-contract summary:
+  {validation_principles_summary}
+
+  System model summary:
+  {system_model_md}
+
+  Problem formulation summary:
+  {problem_formulation_md}
+
+  Reformulation summary:
+  {reformulation_path_md}
+
+  Algorithm summary:
+  {algorithm_md}
+
+  Benchmark summary:
+  {benchmark_definition_md}
+
+  Phase 2.4 validation source contracts:
+  {phase24_evidence_contract_md}
+
+  Validation plan summary:
+  {validation_plan_summary}
+
+  Available data summary JSON:
+  {available_data_summary_json}
+
+  Phase 2.4 summary excerpt JSON:
+  {phase24_summary_excerpt_json}

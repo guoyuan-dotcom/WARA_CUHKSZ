@@ -1,0 +1,249 @@
+phase_id: phase3.4
+slug: introduction_references
+name: introduction_writer
+variables:
+  - source_map_json
+  - current_paper_brief_json
+  - introduction_facts_json
+  - verified_reference_bank_json
+  - reference_quality_report_json
+  - reference_strategy_json
+  - writing_agent_request_json
+  - literature_agent_request_json
+output_schema:
+  required:
+    - introduction_tex
+    - selected_reference_keys
+    - citation_claim_map
+template: |
+  You are writing the Introduction section of an IEEE Wireless Communications Letters manuscript.
+
+  Task:
+  Return valid JSON only with exactly these keys:
+  - introduction_tex
+  - selected_reference_keys
+  - citation_claim_map
+
+  Output requirements:
+  - introduction_tex must begin with \section{Introduction}
+  - selected_reference_keys must be a JSON array of final BibTeX keys
+  - citation_claim_map must be a JSON array of objects with:
+    - sentence_id
+    - claim_text
+    - citation_keys
+    - claim_type
+  - introduction_tex should be as long as needed for a complete WCL opening section; do not pad for word count.
+  - introduction_tex must follow this WCL introduction flow: concrete wireless motivation, compact closest-work context, precise gap, concise "In this letter" contribution lead-in with itemized contributions, a short organization paragraph, and a concise notation paragraph.
+  - The organization paragraph must appear after the contribution list.
+  - The notation paragraph must be the final paragraph of the Introduction.
+
+  Current-paper content brief:
+  {current_paper_brief_json}
+
+  Agent boundaries:
+  - Treat the WritingAgent request JSON and LiteratureAgent request JSON below as the role boundaries for this call.
+  - WritingAgent controls paper prose and must not redefine frozen technical contracts, equations, metrics, methods, or experiment evidence.
+  - LiteratureAgent controls reference grounding and citation-claim mapping and must not invent references or alter technical content.
+  - Do not mention agents, artifacts, gates, phases, controller terminology, or workflow internals in the final Introduction.
+  - Acronym discipline is part of the writing task, not a later cleanup task. Any acronym or abbreviation introduced in the Introduction must be defined on first prose use as `full descriptive name (ABBR)`. If the full form is not trustworthy from the supplied paper brief or references, avoid the acronym.
+  - The Introduction starts the main-body acronym scope. Do not rely on definitions that appeared only in the abstract; if an acronym first appears in the main body here, define it once here and use the abbreviation or full phrase without repeated parenthetical definitions afterward.
+
+  Topic-first writing rule:
+  - The Introduction must be organized around Current-paper content brief, especially paper_topic, must_center_on, system_scope_from_current_paper, optimization_scope_from_current_paper, and method_scope_from_current_paper.
+  - Treat Current-paper content brief as the paper's positive writing plan: it defines what the motivation, related work, gap, contribution, and evidence framing are about.
+  - literature_source and verified_reference_bank are support material only; they must not redefine the system setting, method route, or contribution.
+  - If the reference bank contains a broader adjacent literature than the current paper brief, cite only the narrow claims that support the brief's concrete problem and closest-work context.
+  - Every major Introduction paragraph must trace back to the current paper brief, not merely to the most common theme in the reference bank.
+
+  Writing objective:
+  - Generate an IEEE WCL introduction.
+  - First-pass authoring principle: the introduction should be submission-quality on the first generation. Do not rely on final review to invent the motivation, closest-work contrast, gap, contribution bullets, or citation grounding.
+  - The Introduction should make the reader understand why this technology direction matters to wireless communications, why this exact problem is timely, why existing formulations miss it, and why the proposed formulation or method is the right minimal response.
+  - The Introduction must sell a clear problem awareness: what wireless-network value the technology creates, what practical bottleneck it exposes, what the closest literature still leaves unresolved, and what new modeling, solution, or evaluation result this letter adds.
+  - The first paragraph must open with the technology's significance for wireless communications, then immediately narrow to the concrete operating bottleneck. Do not start directly from a single transmitter setup unless the first sentence also states why the technology direction matters to wireless systems.
+  - The Introduction should read like a high-level IEEE letter, not like a taxonomy export. A strong paragraph has a thesis, a technical problem, and a reason the next paragraph follows.
+  - Do not write the Introduction as a taxonomy of literatures. References should sharpen the paper's design conflict, not become a catalog of technology areas.
+  - No paragraph may be only a citation-supported survey summary. Each related-work paragraph must end by explaining what limitation, modeling assumption, or design consequence remains for the current paper.
+  - Before the contribution list, do not create one-sentence motivation, related-work, or gap paragraphs. If a citation sentence is too narrow to stand alone, merge it into the adjacent related-work paragraph or expand it into a two-or-more-sentence argument.
+  - If two adjacent paragraphs could be swapped without changing the argument, rewrite them. The order must reflect a causal path from wireless significance to operating bottleneck to closest-work gap to contribution.
+  - Keep citation clusters readable: avoid more than three citation keys in one citation command unless the current sentence truly makes one shared claim about all cited works.
+  - The gap sentence must be the intellectual hinge of the Introduction. It should make the reader see why the proposed formulation or method is necessary, not merely state that a topic is unexplored.
+  - Do not write a generic survey.
+  - Write at high-level letter quality: every paragraph should have a clear thesis sentence, a causal connection to the next paragraph, and a specific research problem.
+  - Do not assemble the introduction by chaining keywords from the title. Avoid sentences whose only function is to name technologies without explaining the technical conflict or missing design element.
+  - Avoid low-information templates such as "is a key direction", "makes this integration actionable", "these lines of work motivate", "despite this progress", "remains challenging", "technical axis", "missing capability", and "is therefore useful" unless the sentence is rewritten with a concrete mechanism, missing assumption, or consequence.
+  - Prefer precise editorial verbs such as "requires", "couples", "exposes", "limits", "leaves", "necessitates", and "enables" over generic verbs such as "has", "shows", "makes", and "provides".
+  - Avoid beginning with broad template openings such as "With the rapid development of 6G", "has attracted significant attention", or "plays an important role" unless the sentence immediately gives a concrete system mechanism and bottleneck.
+  - Avoid ending paragraphs with vague value statements such as "which is important for future networks" or "which improves system performance"; state the concrete consequence for the current formulation or design.
+  - The gap paragraph must read like the paper's intellectual argument, not a safe checklist. It should identify the closest missing combination of system mechanism, uncertainty model, and optimization variable choice.
+  - The closest-work contrast must be precise. At least one sentence before the contribution list should state what the nearest prior formulations optimize or assume and what they leave outside the present coupled design. Avoid vague gaps such as "has not been fully investigated" unless the sentence also states the concrete missing mechanism and consequence.
+  - Contribution bullets should be contribution-level claims, not summaries of section contents. Each item should tell the reader what the paper adds and why it matters.
+  - Use literature_source for background and related-work clues only.
+  - Use technical_source for the actual problem, method, benchmark, and contribution.
+  - Use results_source only to control method naming, evidence framing, and claim strength.
+  - Use the topic rationale from literature_source to make the motivation specific rather than generic.
+  - Use at least the minimum reference target when the verified reference bank supports it; prefer peer-reviewed and IEEE references.
+  - Convert topic rationale into paper-native motivation and gap framing; do not mention scouting, selection, scores, or evaluation criteria explicitly.
+
+  WCL style evidence from highly cited IEEE Wireless Communications Letters:
+  - High-cited WCL introductions usually start with why a wireless technology matters, and quickly name the bottleneck that makes the paper necessary, e.g., feedback overhead, RF-chain cost, channel-estimation overhead, energy-limited sensors, or interference scaling.
+  - The related-work discussion is compact and problem-driven. It does not label paragraphs as "technical axes" or present a taxonomy unless the taxonomy itself is the contribution.
+  - The gap is usually introduced through a direct "However" or "Different from" turn and then immediately tied to what this letter studies.
+  - The contribution transition should sound like WCL prose, e.g., "In this letter, we ..." or "To address this problem, we ..."; avoid workflow language, meta-structure language, and over-polished slogans.
+  - WCL introductions are concise. Prefer 450--800 focused words unless the current reference grounding truly requires more.
+
+  Required introduction structure:
+  1. Paragraph 1 - technology significance and concrete motivation:
+     - the first sentence must state why the studied technology or service integration matters for wireless communications
+     - explain why the current technology matters for modern wireless systems using a concrete reason from the current brief
+     - keep this paragraph at the background/motivation level: promise, practical value, and the main operating challenge
+     - connect the broad importance to the current research direction without spelling out the full system model
+     - Do not use broad wireless buzzwords unless the current paper brief explains the concrete link to the studied wireless scenario.
+     - by the second or third sentence, state the concrete pain point or operating bottleneck that makes the exact topic worth studying now
+     - do not place the detailed scenario in this paragraph. Avoid full setup phrases such as "a narrowband single-cell downlink where ...", "a large ULA serves single-antenna users ...", or "we consider a system with ..."; those belong in the contribution transition or Section II.
+     - avoid opening with "is a key direction", "has attracted significant attention", or "plays an important role" unless the sentence immediately names the concrete bottleneck and design consequence
+     - use verified citations for background statements
+     - convert the supplied topic rationale into normal paper motivation; do not mention selection, scores, scouting, or meta-evaluation
+  2. Paragraph 2 - closest prior-work context:
+     - select this thread from current_paper_brief_json, not by inferring a common theme from the reference bank
+     - cover one closest technical thread explicitly supplied by the current paper brief
+     - organize prior work thematically, not paper by paper
+     - each related-work claim must have citation support
+     - begin with what this literature enables or assumes, not with a generic phrase such as "A line of work studies..."
+     - end by naming the remaining limitation relative to the current paper's design variables, constraints, or operating regime
+  3. Paragraph 3 - second context thread plus gap:
+     - select this thread from current_paper_brief_json, not by inferring a common theme from the reference bank
+     - cover a different necessary context thread from Paragraph 2, selected explicitly from the current paper brief
+     - the two literature paragraphs must not repeat the same theme with different wording
+     - end this paragraph by stating the unresolved gap addressed by the current paper
+     - the gap must state what existing works optimize or assume, what coupling, constraint, or modeling feature they miss, and why that omission matters for the current paper's objective
+     - avoid weak gap templates such as "has not been fully investigated" unless the sentence also gives the concrete missing mechanism and consequence
+     - write natural prose; do not use formulations such as "The first ... The second ... The third ..."
+     - do not close with a generic "remains challenging" sentence; close with the exact missing mechanism, assumption, or design consequence that this letter addresses
+  4. Paragraph 4 - contribution lead-in and itemized contributions:
+     - start with one or two concise sentences that say what this letter does in response to the gap
+     - the lead-in must not enumerate the formulation, method, or evaluation; it should only introduce the contribution list
+     - Prefer a natural WCL lead-in such as "In this letter, we ..." followed by "The main contributions are summarized as follows." Do not use "Motivated by this gap" if it makes the prose sound templated.
+     - immediately follow with a LaTeX itemize contribution list
+     - use 2 or 3 concise \item entries
+     - each contribution must add new information and must not repeat the preceding paragraphs with different wording
+     - summarize only what the current technical artifacts actually implement
+     - keep contribution items at contribution level: formulation idea, method idea, and evaluation role
+     - write contribution bullets as concrete technical claims with active verbs. Avoid "We formulate/develop/provide" unless the same sentence names the specific modeling element, solution element, or evaluation contrast and why it matters.
+     - each contribution item must name the specific modeling element, solution element, or evaluation contrast added by this letter
+     - avoid empty contribution templates such as "We formulate a problem", "We develop an algorithm", or "We provide simulations" unless each sentence names the concrete capability added by the letter
+     - when using three items, use this non-overlapping pattern:
+       item 1 = modeling/formulation contribution without listing constraints;
+       item 2 = algorithmic framework contribution without block-update or search details;
+       item 3 = evaluation/evidence contribution, which may state a scoped qualitative gain if it is supported by results_source and aligned with the plotted benchmark set
+     - A scoped qualitative gain statement is allowed in the last contribution item, e.g., "Numerical results indicate that ... under the considered settings." Do not give exact percentages, median gains, win rates, or universal superiority claims in the Introduction.
+     - do not include implementation details such as scalar search, per-block update rules, exact physical-metric expressions, or exact benchmark parameter settings
+     - do not list formulation constraints, thresholds, budgets, or feasibility conditions in the Introduction; leave them to Section~\ref{sec:system_model}
+  5. Organization paragraph:
+     - after the contribution list, add a short paragraph beginning "The remainder of this letter is organized as follows."
+     - reference Section~\ref{sec:system_model}, Section~\ref{sec:proposed_solution}, Section~\ref{sec:numerical_results}, and Section~\ref{sec:conclusion}
+     - keep it factual and do not introduce new claims
+  6. Notation paragraph:
+     - add one short final paragraph beginning "\textit{Notation:}"
+     - define only notation that appears in the later technical sections, such as bold lowercase/bold uppercase letters, $(\cdot)^T$, $(\cdot)^H$, $\|\cdot\|_2$, or $\mathbb{C}$ when applicable
+     - keep this paragraph concise; do not turn it into a preliminaries section
+
+  WCL content boundary:
+  - The Introduction should sell the research problem and paper idea, not pre-write the formulation, algorithm section, or numerical section.
+  - Do not include inline mathematical variables, equations, optimization constraints, or notation definitions in the motivation, literature, gap, or contribution paragraphs.
+  - Before the final notation paragraph, write mathematical concepts in words rather than `$...$` notation; for example, use "half-wavelength fixed array" rather than a math expression for the wavelength spacing, and use method names rather than variable tuples.
+  - Mathematical notation is allowed only in the final \textit{Notation:} paragraph.
+  - Do not describe benchmark implementation parameters or method-specific calibration constants in the Introduction.
+  - Do not preview numerical values, percentages, feasibility rates, median gains, or key-performance-indicator lists in the Introduction.
+  - Do not describe algorithm implementation details such as scalar search, per-entity update sweeps, exact physical-metric evaluation, or exact response-metric evaluation in the Introduction.
+  - Do not describe block-update mechanics or implementation order in the Introduction.
+  - Do not write a full constraint list in the Introduction.
+  - The last contribution item may include a qualitative numerical-evidence statement if it is scoped to the considered settings and current plotted benchmarks. Do not include exact numerical values, percentages, median gains, win rates, feasibility rates, or broad claims such as "always outperforms".
+  - Benchmark discussion is allowed only at a high level using the current paper's method names; leave implementation details to Numerical Results.
+  - The formulation details, variable definitions, constraints, algorithms, and exact benchmark settings belong in later sections.
+
+  Claim-control rules:
+  - Every related-work or background claim must cite keys from verified_reference_bank only.
+  - Do not cite references outside verified_reference_bank.
+  - Do not use unsupported or weakly supported claims.
+  - Do not mention workflow internals, phase numbers in the prose, LLMs, plugins, harnesses, or code generation.
+  - Do not write "proposed" or "baseline" alone when clear method names are available.
+  - Use long method names on first mention, then short names.
+  - Do not invent numerical results in the Introduction.
+  - Do not recast the paper objective into a common objective such as transmit-power minimization unless the frozen technical source explicitly defines that as the paper objective. If the objective is not clear, use high-level wording such as resource allocation or performance-oriented design rather than inventing a new objective.
+  - Do not claim global optimality, guarantees, universal superiority, or statistical significance.
+  - Do not import mechanisms from a different wireless topic unless those mechanisms appear explicitly in the current paper brief and technical_source.
+  - If literature_source contains a broader or older topic than technical_source, the current technical_source problem scope wins.
+  - If the generated introduction sounds like a generic survey after removing the paper title, rewrite it. The section must remain recognizable as this exact paper from the motivation, gap, and contribution bullets alone.
+
+  Related-work rules:
+  - The two closest-work threads must be selected from current_paper_brief_json, not inferred from the reference bank.
+  - Prioritize peer-reviewed citations when possible.
+  - arXiv may be used as a content-discovery source, but final citations must use the verified final BibTeX key from verified_reference_bank. If the bank marks an arXiv candidate as replaced_by_published_version, cite the published IEEE/journal/conference version, not the arXiv preprint.
+  - ArXiv-only citations may be used only when they are marked as necessary in verified_reference_bank and no published version was verified.
+  - Explain what each related-work category accomplished and what limitation remains relative to the current paper.
+  - Use the recommended_reference_keys and mandatory_reference_keys when they are relevant to the stated claims.
+  - Keep arXiv-only citations minimal; do not rely on them for generic background if verified peer-reviewed references are available.
+  - The final bibliography is deterministic and must follow IEEE-style abbreviated venue names rather than full journal or conference names.
+  - Prefer references that can be verified as formally published IEEE or peer-reviewed entries; use arXiv-only entries only when necessary and closely related.
+  - Bibliography template rule: journal papers must map to @article with a journal field; conference papers must map to @inproceedings with a booktitle field. Do not treat conference venues as journal fields.
+  - Bibliography detail rule: when a conference location is verified from authoritative metadata, keep it as an address field in the @inproceedings entry. Keep month only when it is verified; do not invent month or address.
+
+  Contribution-link rules:
+  - The contribution paragraph must align with technical_source, not upstream hypotheses.
+  - Make clear what technical element the proposed design adds beyond the main benchmark.
+  - Do not repeat the same contribution once in prose and again in bullets; the prose lead-in should only introduce the list.
+
+  Forbidden language in introduction prose:
+  - This letter studies this bottleneck
+  - This paper studies this bottleneck
+  - This letter studies this problem
+  - This paper studies this problem
+  - technical axis
+  - first literature axis
+  - second literature axis
+  - A first thread
+  - A second thread
+  - first line of work
+  - second line of work
+  - missing capability
+  - current paper
+  - exact current topic
+  - phase
+  - LLM
+  - Codex
+  - generated_plugin
+  - draft
+  - preliminary
+  - proves
+  - guarantees
+  - statistically significant
+
+  Before returning, verify internally:
+  1. The first three paragraphs form a causal motivation -> closest-work context -> gap argument rather than a keyword survey.
+  2. The first paragraph does not end with a weak deictic sentence such as "This letter studies this bottleneck ..."; instead, introduce the exact system setting as part of the concrete design gap or the "In this letter, we ..." contribution transition.
+  3. The first paragraph is not a system-model paragraph. It may mention the technology and challenge, but it must not enumerate topology, bandwidth model, antenna geometry, user type, CSI assumptions, and constraints as a setup sentence.
+  2. No pre-contribution argument paragraph is a single isolated sentence.
+  3. The contribution bullets are capabilities added by this letter, not section summaries.
+  4. Every related-work claim uses verified references and no paragraph depends on uncited generic background.
+
+  Structured source map:
+  {source_map_json}
+
+  Introduction facts JSON:
+  {introduction_facts_json}
+
+  Verified reference bank JSON:
+  {verified_reference_bank_json}
+
+  Reference quality report JSON:
+  {reference_quality_report_json}
+
+  Reference strategy JSON:
+  {reference_strategy_json}
+
+  WritingAgent request JSON:
+  {writing_agent_request_json}
+
+  LiteratureAgent request JSON:
+  {literature_agent_request_json}

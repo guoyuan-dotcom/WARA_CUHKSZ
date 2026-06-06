@@ -1,0 +1,70 @@
+phase_id: phase3.4
+slug: introduction_references
+name: reference_check
+variables:
+  - introduction_facts_json
+  - verified_reference_bank_json
+  - selected_reference_keys_json
+  - citation_claim_map_json
+  - reference_quality_report_json
+output_schema:
+  required:
+    - summary
+    - issues
+    - keep_keys
+    - drop_keys
+    - recommended_additional_keys
+template: |
+  You are performing a reference audit for an IEEE Wireless Communications Letters manuscript.
+
+  Task:
+  Return valid JSON only with exactly these keys:
+  - summary
+  - issues
+  - keep_keys
+  - drop_keys
+  - recommended_additional_keys
+
+  Meaning of fields:
+  - summary: one short paragraph
+  - issues: list of objects with keys:
+    - severity: info | warning | error
+    - category: coverage | claim_mapping | venue_style | entry_type | arxiv_usage | relevance
+    - message
+    - reference_key
+  - keep_keys: list of final BibTeX keys that should remain in the final bibliography
+  - drop_keys: list of final BibTeX keys that should be removed if they are weakly connected to Introduction claims
+  - recommended_additional_keys: list of verified final BibTeX keys that would strengthen the Introduction if relevant
+
+  Rules:
+  - This is a reference-audit call only; do not rewrite the Introduction.
+  - Do not invent references that are not already present in verified_reference_bank.
+  - Do not import topic-specific references or mechanisms unless they are present in the current facts and verified reference bank.
+  - Prefer peer-reviewed and IEEE references.
+  - Treat arXiv as useful for discovering technical content, but prefer the published IEEE/journal/conference version when verified_reference_bank marks a candidate as replaced_by_published_version.
+  - Minimize arXiv-only references unless they are closely tied to the closest related work and no published version exists.
+  - Check that journal and conference references are being used in roles that make sense for the paper claims.
+  - Treat IEEE-style abbreviated venue names as the required final style.
+  - Do not claim metadata that is not present in the provided reference bank.
+
+  Audit goals:
+  1. Check whether the selected references adequately support motivation, related work, gap, and contribution framing.
+  2. Flag references that appear weakly related or unused by the Introduction claim map.
+  3. Flag excessive reliance on arXiv-only references.
+  4. Flag suspicious venue-style or entry-type usage patterns at a high level.
+  5. Recommend which verified keys should definitely remain in the final bibliography.
+
+  Introduction facts JSON:
+  {introduction_facts_json}
+
+  Verified reference bank JSON:
+  {verified_reference_bank_json}
+
+  Selected reference keys JSON:
+  {selected_reference_keys_json}
+
+  Citation claim map JSON:
+  {citation_claim_map_json}
+
+  Reference quality report JSON:
+  {reference_quality_report_json}

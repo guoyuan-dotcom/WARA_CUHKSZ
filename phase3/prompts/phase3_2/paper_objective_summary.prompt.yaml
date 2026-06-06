@@ -1,0 +1,34 @@
+phase_id: phase3.2
+slug: numerical_results
+name: paper_objective_summary
+variables:
+  - problem_formulation_summary
+  - reformulation_summary
+  - algorithm_summary
+  - benchmark_summary
+  - experiment_plan_summary
+template: |
+  Paper objective:
+  - State the main system-level objective and the benchmark limitation.
+  - Explain what additional design degree of freedom the proposed method exploits.
+  - Explain what numerical evidence should support the paper contribution.
+
+  Problem formulation cues:
+  {problem_formulation_summary}
+
+  Reformulation cues:
+  {reformulation_summary}
+
+  Algorithm cues:
+  {algorithm_summary}
+
+  Benchmark cues:
+  {benchmark_summary}
+
+  Experiment plan cues:
+  {experiment_plan_summary}
+
+  Expected paper-level interpretation:
+  - The proposed method should be framed as improving the main performance metric by addressing the current benchmark limitation.
+  - The benchmark should be framed as a strong reference that lacks the current method's key modeling or optimization component.
+  - The Numerical Results section should connect the observed gains to this algorithmic design choice rather than merely reporting larger or smaller values.

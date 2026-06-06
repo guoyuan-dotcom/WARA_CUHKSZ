@@ -1,0 +1,90 @@
+phase_id: phase3.4
+slug: introduction_references
+name: technical_citation_inserter
+variables:
+  - current_paper_brief_json
+  - verified_reference_bank_json
+  - reference_quality_report_json
+  - introduction_citation_claim_map_json
+  - system_model_problem_formulation_section_tex
+  - proposed_solution_section_tex
+  - numerical_results_section_tex
+output_schema:
+  required:
+    - system_model_problem_formulation_section_tex
+    - proposed_solution_section_tex
+    - numerical_results_section_tex
+    - technical_citation_map
+template: |
+  You are adding citations to the technical sections of an IEEE Wireless Communications Letters manuscript.
+
+  Task:
+  Return valid JSON only with exactly these keys:
+  - system_model_problem_formulation_section_tex
+  - proposed_solution_section_tex
+  - numerical_results_section_tex
+  - technical_citation_map
+
+  Core rule:
+  - This is a citation-insertion pass only.
+  - Do not rewrite, reorder, summarize, delete, or add technical content.
+  - Do not change equations, labels, references, variables, constraints, algorithm steps, figure text, captions, benchmark definitions, or numerical explanations.
+  - The returned section text must be identical to the supplied section text except for adding necessary `\cite{...}` commands in prose sentences.
+  - If a claim is too specific for the available references, leave it uncited rather than adding a weak or misleading citation.
+  - Do not introduce any new acronym or abbreviation while adding citations. If the supplied text already contains an undefined abbreviation, preserve the text and let the full-paper abbreviation gate route it to the writing-repair stage.
+
+  Where citations are appropriate:
+  - Add citations to prose sentences that introduce a standard system model, channel model, uncertainty model, SWIPT/energy-harvesting model, UAV communication model, beamforming/resource-allocation model, robust optimization idea, SCA/AO/BCD/WMMSE/SDR-style method, or benchmark family.
+  - Treat the listed technologies and methods as conditional examples only. Cite only concepts that actually appear in the supplied current-paper sections and current paper brief; do not add a citation or mechanism merely because it is common in wireless communications.
+  - Prefer citations in the explanatory prose immediately before or after a model or method is introduced.
+  - Avoid citing every sentence; use a small number of high-value citations.
+  - The technical sections should not look citation-free, but they should also not become a survey.
+  - The full-paper reference target is enforced across Introduction plus technical sections. Do not force all references into the Introduction; place citations where the supported technical concept actually appears.
+  - System Model and Problem Formulation should cite the closest model/assumption foundations when the section uses standard channel, uncertainty, propagation, receiver, energy, mobility, deployment, or resource-allocation models.
+  - Proposed Solution should cite method foundations when the section invokes standard optimization tools such as robust optimization, SCA, AO, BCD, WMMSE, SDR, relaxation, randomization, or penalty/projection ideas.
+  - When Proposed Solution contains a named standard method family or solver route, it must include at least one citation to the closest available method/resource-allocation foundation from the verified bank. Do not leave a standard method paragraph citation-free just because the exact proposed contribution is new.
+  - Numerical Results should cite benchmark/evaluation context when the section introduces benchmark families, baseline designs, simulation conventions, or comparison protocols. Do not cite this paper's observed numerical trends.
+
+  Where citations are forbidden:
+  - Do not place citations inside display equations, inline math, algorithmic pseudocode, labels, captions, file paths, or figure include commands.
+  - Do not cite purely internal claims about this paper's generated figures, numerical trends, specific parameter values, or implementation artifacts.
+  - Do not cite the proposed contribution itself unless the sentence is explicitly contrasting it with prior methods.
+
+  Reference rules:
+  - Use only final BibTeX keys from verified_reference_bank_json.
+  - Do not invent references.
+  - Prefer peer-reviewed and IEEE references when they match the claim.
+  - If a paper was discovered through arXiv but verified_reference_bank_json marks it as replaced_by_published_version, cite the final published key/version rather than the arXiv preprint.
+  - Reuse citations already selected by the Introduction when they support the same technical concept.
+  - Keep arXiv-only references minimal and only for closely related claims.
+
+  technical_citation_map requirements:
+  - Return a JSON array.
+  - Each item must contain:
+    - section: system_model | proposed_solution | numerical_results
+    - cited_sentence
+    - citation_keys
+    - citation_role
+  - citation_role should be one of: model_context, method_foundation, benchmark_context, evaluation_context.
+  - Include at least one technical_citation_map item for system_model or proposed_solution whenever the supplied sections contain citable model/method context.
+
+  Current paper brief JSON:
+  {current_paper_brief_json}
+
+  Verified reference bank JSON:
+  {verified_reference_bank_json}
+
+  Reference quality report JSON:
+  {reference_quality_report_json}
+
+  Introduction citation claim map JSON:
+  {introduction_citation_claim_map_json}
+
+  System Model and Problem Formulation section:
+  {system_model_problem_formulation_section_tex}
+
+  Proposed Solution section:
+  {proposed_solution_section_tex}
+
+  Numerical Results section:
+  {numerical_results_section_tex}

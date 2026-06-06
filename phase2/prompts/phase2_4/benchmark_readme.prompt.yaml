@@ -1,0 +1,62 @@
+phase_id: phase2.4
+slug: benchmark_readme
+name: benchmark_and_solver_readme
+variables:
+  - topic
+  - handoff_final_title
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - benchmark_definition_md
+output_schema:
+  required:
+    - benchmark_plan_md
+    - solver_readme_md
+template: |
+  You are writing the benchmark and solver-readme artifacts for Phase 2.4 of a wireless communications optimization agent.
+  
+  Return valid JSON only with exactly these keys:
+  - benchmark_plan_md
+  - solver_readme_md
+  
+  Rules:
+  - Stay within wireless communications + optimization + 5G/6G framing.
+  - Keep the benchmark practical and engineering-style.
+  - Keep both markdown outputs short and implementation-oriented.
+  - Do not write a long benchmark survey or validation handbook.
+  - Treat mathematical_contract_json as the frozen original-problem interface. Benchmarks may restrict, simplify, or approximate allowed mechanisms, but they must stay inside the frozen interface and the Phase 2.4 WirelessBenchmarkAgent contract.
+  - If benchmark_definition_md contains a `[Phase 2.4 WirelessBenchmarkAgent benchmark contract]` block, treat that JSON as authoritative.
+  - Do not invent a different baseline family when the frozen contract already selected practical heuristics/reference methods.
+  - Distinguish deployable practical benchmarks from oracle/reference solvers; do not present oracle/reference methods as the main engineering gain baseline.
+  - If the frozen problem has hard association, clustering, sparsity, admission, fronthaul, or service constraints, the main practical benchmark must obey the same feasible set. A full-association or full-cooperation method that relaxes such constraints may be included only as an oracle/reference diagnostic, not as the practical plotted benchmark for gain claims.
+  - For user-centric clustering or AP-user association problems, a regularized-ZF or MRT benchmark should use a fixed feasible association rule, such as strongest top-L APs per user under the same L_max, followed by power loading under the same AP power constraints. Do not describe it as all APs serving all users unless the frozen formulation allows that.
+  - Classify benchmarks by final-figure role: strongest credible feasible/practical benchmark, optional ablation, diagnostic-only, invalid-for-claim, oracle/reference, or redundant.
+  - The final figures should use the same selected plotted benchmark set, usually proposed plus one practical benchmark and optionally one ablation. Extra benchmarks should remain in diagnostics/audit notes unless they are necessary for the paper claim.
+  - Do not hide a valid credible benchmark merely because it beats the proposed method. If it does, document that the claim/regime needs redesign rather than removing it.
+  - benchmark_plan_md should define only:
+    - benchmark names
+    - what they solve
+    - why they are fair
+    - what metrics they compare
+  - solver_readme_md should define only:
+    - file roles
+    - how to run validation
+    - what outputs will be produced
+  
+  Topic:
+  {topic}
+  
+  Inherited title:
+  {handoff_final_title}
+  
+  Frozen mathematical interface:
+  {mathematical_contract_json}
+  
+  System model:
+  {system_model_md}
+  
+  Problem formulation:
+  {problem_formulation_md}
+  
+  Benchmark definition:
+  {benchmark_definition_md}

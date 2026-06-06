@@ -1,0 +1,158 @@
+phase_id: phase3.3
+slug: abstract_conclusion
+name: abstract_keywords_conclusion_writer
+variables:
+  - paper_facts_json
+  - writing_agent_request_json
+output_schema:
+  required:
+    - abstract_tex
+    - keywords_tex
+    - conclusion_tex
+template: |
+  You are writing two final IEEE Wireless Communications Letters style LaTeX snippets for a wireless communications optimization paper.
+
+  Task:
+  Return valid JSON only with exactly these keys:
+  - abstract_tex
+  - keywords_tex
+  - conclusion_tex
+
+  WritingAgent boundary:
+  - Treat the WritingAgent request JSON below as the role boundary for this call.
+  - Use it to respect frozen contracts, required artifacts, allowed actions, forbidden actions, and expected output scope.
+  - Do not redefine the research problem, mathematical objective, method identities, benchmark identities, metrics, or evidence.
+  - Do not mention agents, artifacts, gates, phases, or controller terminology in the final paper snippets.
+
+  The values must be LaTeX-ready snippets with these exact wrappers:
+  - abstract_tex must contain:
+    \begin{abstract}
+    ...
+    \end{abstract}
+  - keywords_tex must contain:
+    \begin{IEEEkeywords}
+    ...
+    \end{IEEEkeywords}
+  - conclusion_tex must contain:
+    \section{Conclusion}
+    ...
+
+  Rules:
+  - Write in final paper tone, not project-report style.
+  - First-pass authoring principle: the abstract and conclusion should be submission-quality on the first generation. Do not rely on final review to add the problem gap, contribution logic, evidence scope, acronym discipline, or notation cleanup.
+  - Write at high-level IEEE letter quality: the abstract and conclusion should sound like a concise research contribution, not a checklist of generated sections.
+  - Do not write the abstract as a five-sentence checklist. The required moves must read as one causal argument: operating conflict -> missing capability -> proposed response -> technical mechanism -> scoped numerical implication.
+  - Each sentence must connect to the previous sentence by cause, contrast, or consequence. Avoid isolated inventory sentences that merely list the system, method, and result facts.
+  - Avoid weak gap templates such as "Existing ... do not jointly ..." unless the same sentence names the concrete design degree of freedom, modeling assumption, or operating regime that prevents the desired capability.
+  - Avoid repetitive mechanism phrasing. Do not repeat the same noun phrase in consecutive sentences unless the second use adds a new role or consequence.
+  - Prefer a paper-native narrative voice: name the wireless operating tension first, then explain why the technical response is necessary. Do not simply restate the title in different words.
+  - Each sentence should do one of these jobs: identify the wireless design tension, state the missing capability, state the proposed capability, summarize the technical idea, or scope the numerical implication.
+  - Avoid generic claims such as "the proposed method is effective", "simulation results demonstrate superiority", "this work provides insights", or "the framework is promising" unless the sentence names the mechanism and evidence-supported operating regime.
+  - Do not over-center the objective name. If the objective is resource or transmit-power minimization, describe it as minimum resource under the stated service/reliability requirements rather than as novelty by itself.
+  - Do not mention any pipeline, phase number, LLM, harness, plugin, code generation, or workflow.
+  - Do not invent numerical results; use only the supplied theory/results summaries.
+  - Do not import topic-specific mechanisms, metrics, benchmarks, or terminology from prior runs. All topic-specific content must come from paper_facts_json.
+  - The current evidence format is figure-based and table-free. Do not cite or imply any table, table row, table scenario, or tabulated key result unless paper_facts explicitly supplies table evidence.
+  - Numerical findings in the abstract and conclusion may only use numbers listed under phase3_2_numbers_available or verified_evidence_registry and permitted by numerical_evidence.comparison_summary.numeric_summary_policy. If a number is absent or marked as a development diagnostic, omit it rather than estimating.
+  - Prefer qualitative evidence-supported wording such as "improves the reported metric in the evaluated regimes" or "supports the benefit of the proposed design" when the supplied evidence is marked limited or non-final.
+  - If the numerical evidence supports improvement over only one plotted benchmark while another benchmark is competitive, state the supported benchmark comparison or use broader scoped wording such as "supports the benefit of the proposed design"; do not imply dominance over all plotted benchmarks.
+  - Keep notation and method naming consistent with the supplied paper facts.
+  - On first mention, use the full proposed and baseline names; later you may use the short names.
+  - Full-paper acronym discipline starts here: do not introduce any acronym or abbreviation in the abstract, keywords, or conclusion unless it is either expanded on first prose use as `full descriptive name (ABBR)` or already unavoidable as a standard index term in IEEEkeywords.
+  - Treat the abstract and the main body as separate acronym scopes. A definition in the abstract does not count as a definition in the Introduction or later body sections.
+  - If the same abbreviation appears in both scopes, define it once in the abstract and once at its first main-body prose use as `full descriptive name (ABBR)`. After the first definition inside a scope, use only `ABBR` or the full phrase without another parenthetical definition.
+  - If the supplied paper facts do not provide a trustworthy full form, write the full descriptive phrase instead of the abbreviation.
+  - Avoid exaggerated claims such as "proves" or "guarantees universal superiority."
+  - If a fact is missing or marked as "not specified", do not invent it.
+  - Abstract acronym discipline is strict:
+    - every technical acronym or abbreviation used in the abstract must be expanded on first appearance
+    - examples include system terms, metrics, algorithms, benchmarks, and method names; define any acronym that appears in the supplied draft or method names
+    - if a proposed-method or benchmark short name is used, define it immediately after the first full method phrase, for example "..., termed XX" or "... (XX)"
+    - if an acronym cannot be introduced with a trustworthy full form from paper_facts, do not use that acronym in the abstract
+    - do not leave any undefined acronym in the abstract body
+
+  Abstract goals:
+  - 120 to 180 words.
+  - Do not use inline mathematical notation, optimizer symbols, or equation variables in the abstract.
+  - In the abstract, describe variables in words rather than symbols, e.g., "allocated radio resources", "beamforming or covariance design variables", "trajectory and scheduling decisions", or other current-paper controls instead of optimizer notation such as `\(\{\mathbf{W}_k\}\)`, `\(\mathbf{V}\)`, or `\(P_{\rm tx}\)`.
+  - Prefer full-language phrases over letter tags in the abstract. Avoid acronym labels when the full phrase is readable, e.g., use "signal-to-interference-plus-noise-ratio thresholds", "semidefinite programming", and "maximum-ratio-transmission benchmark" instead of "SINR", "SDP", or "MRT".
+  - Keep detailed notation, objective symbols, constraints, and matrix variables in the technical sections, not in the abstract.
+  - Must follow this logic:
+    1. problem / motivation
+    2. gap / limitation
+    3. proposed method
+    4. key technical idea
+    5. main figure-supported numerical finding
+  - These five moves are a logic contract, not a required one-sentence-per-move template. Combine or split sentences when doing so improves flow and avoids a mechanical checklist style.
+  - The gap and technical idea must be concrete enough that the abstract would still make sense without the title. Avoid phrases such as "a proposed optimization method" or "an effective framework" unless the same sentence names the actual modeling or solution capability.
+  - The abstract should read like a concise final WCL abstract.
+  - The first sentence should motivate the exact system tension; the second should identify the missing modeling/solution capability. Do not start with a broad generic sentence if the supplied paper facts support a more specific opening.
+  - Do not use process/report phrases such as "figure-driven evaluations", "the figures show", "the evidence package", or "the evaluated artifact". Write "Numerical results..." or "Simulations..." instead.
+  - Use at most one core numerical result in the abstract, and use no explicit numerical value if the supplied evidence is marked limited or non-final.
+  - Do not cite figures or tables in the abstract.
+
+  Keywords goals:
+  - Provide 4 to 6 concise IEEE-style index terms.
+  - Use only terms grounded in the supplied paper facts.
+  - Prefer topic, method family, system, and optimization keywords that match the paper objective.
+  - Separate items with commas inside the IEEEkeywords environment.
+
+  Conclusion goals:
+  - 120 to 220 words.
+  - One or two short paragraphs are acceptable.
+  - Do not use inline mathematical notation, optimizer symbols, or equation variables in the conclusion.
+  - In the conclusion, describe variables and metrics in words unless a standard acronym has already been defined, e.g., "allocated radio resources", "beamforming or covariance design variables", "trajectory and scheduling decisions", and "transmit power" instead of optimizer symbols such as `\(\{\mathbf{W}_k\}\)`, `\(\mathbf{V}\)`, or `\(P_{\rm tx}\)`.
+  - Prefer full-language phrases over letter tags in the conclusion. Avoid acronym labels when the full phrase is readable, e.g., use "signal-to-interference-plus-noise-ratio thresholds", "semidefinite programming", and "maximum-ratio-transmission benchmark" instead of "SINR", "SDP", or "MRT".
+  - Keep detailed notation, objective symbols, constraints, and matrix variables in the technical sections and numerical-results captions/discussion, not in the conclusion.
+  - Must follow this logic:
+    1. restate the contribution
+    2. summarize the technical idea
+    3. summarize the main figure-supported numerical findings
+    4. state the implication and, optionally, one concise future direction
+  - The conclusion should synthesize the design insight, not replay section order. It should explain what mechanism the results support and under which scoped operating regime, while avoiding variables, unsupported benchmarks, and generic "effectiveness" language.
+  - The conclusion must not be an abstract paraphrase. It should close the paper by explaining what the study teaches about the modeled wireless design tradeoff.
+  - Use at most two core numerical results in the conclusion, and use no explicit numerical value if the supplied evidence is marked limited or non-final.
+  - Do not restate each figure one by one.
+  - Do not use process/report phrases such as "figure-driven results", "the plotted evidence", "the package shows", or "the final registry". Write a paper-level conclusion about the observed operating regimes and supported design insight.
+  - End with a contribution-oriented closing sentence.
+  - The closing sentence should state the supported design implication under the considered settings, not a generic future promise.
+
+  Writing focus:
+  - The writing must stay aligned with the paper objective and claimed benefit.
+  - Answer these questions implicitly through the prose:
+    - Why was the method proposed?
+    - What limitation does it address?
+    - What capability does the proposed method add?
+    - What evidence supports the claimed benefit?
+    - What is the implication under the considered settings?
+  - Abstract and conclusion must be insight-driven, not generic summaries.
+
+  Claim-strength rules:
+  - Allowed: achieves higher average performance, improves over the benchmark under the considered settings, maintains feasibility, supports the benefit of the proposed design, indicates the value of the additional design degrees of freedom.
+  - Forbidden unless explicitly supported: proves, guarantees, universally optimal, globally optimal, always superior, statistically significant, exhaustive simulations, all possible regimes.
+  - Prefer phrases such as:
+    - under the considered settings
+    - in the evaluated scenarios
+    - over the tested configurations
+
+  Method naming rules:
+  - Use the proposed and benchmark display names from paper_facts.
+  - Do not reduce them to only "proposed" or "baseline" if names are available.
+  - If the names are marked with fallback behavior, use clear generic names without inventing technical abbreviations.
+
+  Output discipline:
+  - Do not output markdown fences.
+  - Do not output explanations outside the JSON object.
+  - Do not include introduction, references, or any other section.
+  - Do not mention internal readiness statuses such as "limited_nonfinal", "final", "draft", "preview", or "development diagnostic" in the final abstract or conclusion; use those facts only to scope claim strength.
+
+  Before returning, verify internally:
+  1. The abstract has problem/motivation, gap, proposed method, technical idea, and evidence-supported implication.
+  2. The conclusion restates the scoped contribution and implication without optimizer notation or unsupported baselines.
+  3. Every acronym in the abstract is defined or avoided using full-language prose.
+
+  Paper facts JSON:
+  {paper_facts_json}
+
+  WritingAgent request JSON:
+  {writing_agent_request_json}

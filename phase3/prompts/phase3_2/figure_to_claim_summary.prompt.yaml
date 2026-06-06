@@ -1,0 +1,21 @@
+phase_id: phase3.2
+slug: numerical_results
+name: figure_to_claim_summary
+variables:
+  - experiment_plan_summary
+  - plot_quality_report_summary
+template: |
+  Claim mapping guidance:
+  - For each supplied figure, identify what metric is plotted, what x-axis variable is varied, which methods are compared, and what claim the figure actually supports.
+  - Do not impose fixed roles by figure index; infer the message from the experiment plan and plot-quality metadata.
+  - Do not introduce a table claim. The current Numerical Results section is a two-figure section.
+
+  Experiment plan:
+  {experiment_plan_summary}
+
+  Plot quality report:
+  {plot_quality_report_summary}
+
+  Writing requirement:
+  - For each figure paragraph, explicitly state which paper claim the numerical evidence supports.
+  - Do not treat the figures as isolated graphics; connect them to the paper objective.

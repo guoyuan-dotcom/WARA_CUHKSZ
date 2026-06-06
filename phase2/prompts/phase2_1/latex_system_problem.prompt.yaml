@@ -1,0 +1,116 @@
+phase_id: phase2.1
+slug: system_model_problem_formulation
+name: ieee_latex_system_problem
+variables:
+  - topic
+  - wireless_feasibility_guardrail
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - core_theory_package_md
+output_schema:
+  required:
+    - ieee_wcl_system_model_problem_formulation_tex
+template: |
+  You are writing a concise IEEE Wireless Communications Letters style LaTeX section pair.
+
+  Task:
+  Return valid JSON only with a single key:
+  - ieee_wcl_system_model_problem_formulation_tex
+
+  The value must be LaTeX text for:
+  - a \subsection{System Model}
+  - a \subsection{Problem Formulation}
+
+  Rules:
+  - Use IEEE paper style wording.
+  - Keep it concise and publication-oriented.
+  - Use proper LaTeX math notation.
+  - Ensure every referenced equation has a matching \label in the same snippet.
+  - Do not put \label directly on \subsection commands; the full-paper wrapper provides section-level labels.
+  - Do not include \documentclass, \begin{document}, bibliography, or unrelated sections.
+  - Do not invent a different problem; stay faithful to the provided phase results.
+  - Treat the provided topic, mathematical_contract, system_model_md, and problem_formulation_md as the source of topic-specific content. Do not import familiar wireless mechanisms, algorithms, metrics, baselines, receivers, or hardware blocks unless they are explicitly present there.
+  - Scope guards are generation rules, not manuscript content. Do not write negative exclusion lists unless excluding a mechanism is itself a stated contribution in the drafts.
+  - Separate physical control variables from derived auxiliary quantities. The original optimization problem should optimize only controllable design variables; derived performance metrics, response variables, slack variables, and algorithmic auxiliaries should remain functions/definitions unless the contract marks them as controls.
+  - Preserve the mathematical_contract exactly. Do not promote, rename, delete, or reformulate contract entries unless the contract explicitly allows it.
+  - The mathematical status of each contract entry is immutable.
+  - A control may appear in the optimizer.
+  - A derived_quantity may appear in objectives or constraints only through its defined function.
+  - A reformulation_only auxiliary must not appear in the original problem.
+  - A parameter or random_quantity must never appear as an optimizer variable.
+  - The optimizer line must be copied from the controls list only. Never infer optimizer variables from derived_quantities, parameters, random_quantities, constraints, objective terms, or reformulation_only entries.
+  - Use the objective object for the objective sense and expression. Use the constraints list for the original constraint relations. Do not invent additional equivalent constraints.
+  - Include in problem (P0) only constraints that restrict the physical controls directly or through derived quantities that depend on those controls. If the mathematical contract or draft contains pure parameter-domain/model-admissibility conditions such as near-field validity, positive noise power, nonnegative weights, fixed geometry, or nonzero constants, state them in prose before or after (P0), not as `s.t.` lines.
+  - Preserve notation_to_preserve unless a LaTeX syntax correction is needed.
+  - If markdown prose conflicts with mathematical_contract, follow mathematical_contract and keep the prose consistent with it.
+  - Treat core_theory_package_md as later-phase reformulation notes only. Do not import its auxiliary variables, equivalent transformations, threshold substitutions, or surrogate notation into the System Model or Problem Formulation.
+  - Avoid itemized lists unless truly needed.
+  - It is fine to use displayed equations with equation environments.
+  - Equation formatting is a hard constraint:
+    - one displayed equation should define only one mathematical quantity or relation;
+    - reserve `subequations` for the original optimization problem (P0) only; do not use `subequations` for ordinary System Model definitions, channel models, uncertainty-set definitions, signal equations, KPI definitions, or hardware-response formulas;
+    - do not preserve compact multi-relation equations from the draft; rewrite them into paper-readable single-relation displays;
+    - do not join two definitions in one display with `\qquad`, commas, or semicolons;
+    - write each independent physical quantity or performance relation in a separate displayed relation; include only the signal, performance, resource, hardware, learning, sensing, queueing, or utility expressions that are present in the provided drafts;
+    - do not write chained definitions such as `a=b=c`; split them into separate displayed equations or state the intermediate quantity in prose;
+    - do not write chained inequalities such as `a\leq b\leq c`; use set-membership notation such as `b\in[a,c]` or split them into two constraint lines;
+    - each numbered equation line may contain at most one primary equality or inequality relation;
+    - if an optimization problem uses `aligned`, each objective or constraint line must contain only one primary relation, and independent physical definitions must not be bundled into that same numbered display.
+  - Avoid overfull two-column displays, but do not over-split compact equations. If a single-relation formula is short enough to fit naturally in one IEEE column, use a single `equation` environment and keep it on one line.
+  - Use `align` continuation lines only when the full expression is genuinely long enough to risk an overfull box. Do not split a short sum or trace expression merely because it contains a plus sign.
+  - If a SINR, harvested-energy, utility, objective, or response metric would require a very long fraction or summation, introduce a local unnumbered shorthand for the aggregate interference, received power, cost, or response term before the numbered main formula.
+  - When splitting is needed, split only continuation terms of the same relation with `\nonumber`; do not create extra equation numbers for continuation lines.
+  - The \subsection{System Model} must follow this narrative order: context/topology, channel and signal equations, controllable variables, performance quantities, assumptions, and a bridge sentence to the formulation.
+  - The first paragraph must make the architecture unambiguous before any equation appears.
+  - If the draft contains mobility, deployment, movable elements, ground/aerial nodes, position-dependent channels, distances, or path loss, state the coordinate convention before the first distance/channel equation and preserve it consistently. Use either horizontal coordinates plus an altitude/height term, or full-dimensional coordinates with embedded lower-dimensional nodes; never mix dimensions or add altitude twice.
+  - Avoid dumping all variables in one paragraph; introduce symbols where they are used.
+  - Maintain clear logical flow between quantities without excessive explanatory prose.
+  - The System Model must read like restrained IEEE prose, not a tutorial and not an agent-generated list of equations. Introduce each displayed formula with a concise technical transition; add interpretation only when it prevents ambiguity.
+  - Use standard IEEE mathematical lead-ins such as "is given by", "can be written as", "is expressed as", "we obtain", "we define", and "we denote". First-person plural is appropriate when it sounds natural, e.g., "We consider", "We denote", and "We define".
+  - Avoid repetitive bare-definition patterns such as "The signal is", "The observation is", "The metric is", and "The utility is" when they are not followed by a proper mathematical transition. Do not avoid normal phrases such as "is given by".
+  - For any resource-splitting, mode-selection, coupling, auxiliary, or hardware-control variable already defined in the drafts, state its physical role in at most one concise sentence.
+  - For any noise terms or impairments with different injection points already defined in the drafts, preserve the distinction in one concise sentence.
+  - For any nonlinear hardware, energy, sensing, queueing, or utility mapping already defined in the drafts, preserve the physical meaning of its parameters and offset/normalization terms in one concise sentence.
+  - For independent streams, waveforms, or random variables already defined in the drafts, use an expectation- or covariance-based transition before giving the closed-form KPI. Do not introduce coherent sums unless the drafts explicitly justify coherent combining.
+  - Do not explain every equation after it is displayed; add post-equation interpretation only when it resolves a modeling ambiguity.
+  - Avoid tutorial-style exposition; write for a communications-theory reviewer, not for a beginner.
+  - Avoid emphatic or AI-like adverbs and connectors such as "critically", "importantly", "specifically", "formally", and "central".
+  - Avoid meta-writing such as "this provides the quantities needed below" or "this exposes the tradeoff".
+  - Prefer short technical sentences over long explanatory clauses.
+  - The \subsection{Problem Formulation} must begin with one compact explanatory paragraph stating what the optimization chooses and what tradeoff or requirement it enforces.
+  - The formal problem must use a numbered optimization layout so that the objective and individual constraints are referenceable.
+  - Use `\begin{subequations}\label{prob:p0}` followed by `\begin{align}` for the original problem. Do not use `align*`, `equation*`, or an unnumbered display for problem (P0).
+  - Show the explicit problem name with `\text{(P0)}` or `\text{($\mathcal{P}_0$)}` on the objective line, while still allowing LaTeX to number the objective and constraints as subequations.
+  - The objective line and every constraint line must have a label. Use constraint-oriented labels such as `\label{con:p0_obj}`, `\label{con:p0_power}`, `\label{con:p0_rate}`, `\label{con:p0_split}`, and `\label{con:p0_rf_lower}`. Do not use `eq:p0_*` labels.
+  - Do not print internal artifact ids or shorthand tags such as `(C-PWR)`, `(C-NF)`, `(C-WGT)`, `(C-NOISE)`, `C1`, or `C2` on the right side of the optimization lines.
+  - In prose, refer to the original optimization directly as "problem (P0)" or "(P0)", not as an equation number. Do not write `Problem \eqref{...}` or `problem \eqref{...}` for the optimization problem itself.
+  - If individual constraints need explanation, reference their constraint labels when useful, e.g., "constraint \eqref{con:p0_power}" or "the power-budget constraint in \eqref{con:p0_power}".
+  - In the formal optimization display, use `\max` or `\min`, not `\mathrm{maximize}`, `\operatorname{maximize}`, `\mathrm{minimize}`, or `\operatorname{minimize}`.
+  - In the formal optimization display, use `\mathrm{s.t.}` or `\text{s.t.}`, not `\mathrm{subject\ to}`, `\text{subject to}`, or the full words "subject to".
+  - In the original problem display, the optimizer line must include only physical controllable variables listed under controls, such as resource-allocation, signal-design, scheduling, hardware-control, trajectory, or mode-selection variables. Do not include derived KPI variables, response variables, slack variables, or algorithmic auxiliaries in the original optimizer line.
+  - If a derived KPI or hardware-response variable improves readability, write it as a defined function of the physical controls and use that function in the objective or constraints. Do not turn it into an independent optimization variable in the original optimization problem.
+  - If the objective is a long worst-case, expectation, min--max, or scenario-aggregated utility, define one compact scalar objective shorthand immediately before problem (P0), preferably `\psi(\cdot)` unless the draft already defines another symbol. Later experiment labels must reuse this defined shorthand, not an invented alias.
+  - Do not introduce equivalent transformations, threshold substitutions, lifted variables, or auxiliary-variable formulations in the Problem Formulation unless they are explicitly listed as original constraints in mathematical_contract.
+  - If a lifted or auxiliary-variable equivalent formulation is useful for the solution, keep it out of this LaTeX snippet.
+  - Do not write objective and constraints as disconnected prose. The constraints should appear in the same formal problem display when they remain readable under the one-relation-per-line rule.
+  - After the display, explain the role of each constraint group in one concise paragraph and then name the dominant convexity/tractability status or technical difficulty. If the formulation is convex after a clean transformation, say so honestly instead of inventing nonconvexity.
+  - Do not claim a model is standard or obvious without defining the exact quantity used in this paper.
+  - In the Problem Formulation subsection, include an explanatory sentence before the formal problem saying what engineering decision is being made.
+  Dynamic wireless feasibility guardrail:
+  {wireless_feasibility_guardrail}
+
+  Topic:
+  {topic}
+
+  Mathematical contract:
+  {mathematical_contract_json}
+
+  System model draft:
+  {system_model_md}
+
+  Problem formulation draft:
+  {problem_formulation_md}
+
+  Core theory package:
+  {core_theory_package_md}

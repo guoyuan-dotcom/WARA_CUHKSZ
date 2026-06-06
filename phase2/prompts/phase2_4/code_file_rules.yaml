@@ -1,0 +1,108 @@
+phase_id: phase2.4
+slug: code_file_generation
+name: code_file_rules
+rules:
+  problem_data.py: |
+    - Keep this file small and structural only.
+    - Define only compact dataclasses / typed containers plus JSON-friendly serialization helpers.
+    - Do NOT include channel formulas, Jacobians, benchmark builders, validation sweeps, or self-tests.
+    - Do NOT include long module docstrings or tutorial comments.
+    - Target roughly 120-180 lines.
+  channels.py: |
+    - Put channel and linearization math here only.
+    - Do NOT define benchmark builders or result serialization.
+    - Keep comments short and formula-focused.
+    - Target roughly 120-200 lines.
+  validation_cases.py: |
+    - Build canonical cases and sweep cases here only.
+    - Do NOT define channels or solver iterations here.
+    - Return lightweight ProblemData instances.
+    - load_canonical_case() and make_validation_cases() must both be callable with no arguments.
+    - If plan_path is supported, it must be optional with default Path('validation_plan.yaml').
+    - Do NOT assume fields like base['N'] exist unless shown in the validation-plan summary.
+    - Use a schema adapter such as get_nested(...) or normalize_validation_plan(...).
+    - Read real YAML fields first, then fallback to make_canonical_problem(), then safe defaults.
+    - Prefer make_canonical_problem(...) plus small updates over direct ProblemData(...) construction.
+    - If you instantiate ProblemData(...) directly, use only field names that appear in the ProblemData contract summary.
+    - Target roughly 100-160 lines.
+  model_ops.py: |
+    - Keep this file focused on model construction and objective/constraint evaluation.
+    - build_model(problem, seed) must return a compact model dict with top-level keys state_init, operators, and metadata.
+    - If the solver needs initial iterates, expose them under model['state_init'] as a dict.
+    - Problem-specific arrays, matrices, and callables should live under model['operators'].
+    - model['operators'] must literally define every required operator key from the module plan using those exact string names.
+    - Define top-level callables named channel_from_state(problem, state), evaluate_state(problem, model, state), and project_state(problem, state), and make each return a dict.
+    - In build_model(...), literally construct:
+      operators = {
+          'channel_from_state': channel_from_state,
+          'evaluate_state': evaluate_state,
+          'project_state': project_state,
+      }
+      return {'state_init': state_init, 'operators': operators, 'metadata': metadata}
+    - evaluate_solution(problem, model, solution) should return one metrics dict containing finite scalar metrics and feasibility indicators.
+    - evaluate_solution(problem, model, solution) must call evaluate_state(...) and return that metrics dict.
+    - Treat ProblemData as a dataclass object and access fields with dot notation (problem.N), never as problem['N'].
+    - model['operators'] must include every required operator from the module plan and no block may depend on undeclared operator keys.
+    - The three operators must succeed on a minimal smoke test using make_canonical_problem(), build_model(), model['state_init'], project_state(...), channel_from_state(...), and evaluate_state(...).
+    - Do NOT call block files from here.
+    - Target roughly 120-200 lines.
+  proposed_block_a.py: |
+    - Implement only the primary update block declared in the module plan.
+    - Use state dict inputs/outputs and keep the update block reusable.
+    - Be tolerant of partially initialized state dicts; initialize missing keys locally when safe.
+    - Treat ProblemData as a dataclass object and access fields with dot notation, never as a dict.
+    - Read problem-specific arrays or callables from model['operators'] and generic annotations from model['metadata']; do not assume task-specific top-level model keys.
+    - Only call operators whose keys are explicitly allowed for this block by the module plan.
+    - Return one updated state dict only; do not return (state, info) tuples.
+    - Do NOT reimplement the outer loop or baseline logic.
+    - Do NOT rename run_primary_update.
+    - Target roughly 120-200 lines.
+  proposed_block_b.py: |
+    - Implement only the secondary update block declared in the module plan.
+    - Use state dict inputs/outputs and keep the update block reusable.
+    - Be tolerant of partially initialized state dicts; initialize missing keys locally when safe.
+    - Treat ProblemData as a dataclass object and access fields with dot notation, never as a dict.
+    - Read problem-specific arrays or callables from model['operators'] and generic annotations from model['metadata']; do not assume task-specific top-level model keys.
+    - Only call operators whose keys are explicitly allowed for this block by the module plan.
+    - Return one updated state dict only; do not return (state, info) tuples.
+    - Do NOT reimplement the outer loop or baseline logic.
+    - Do NOT rename run_secondary_update.
+    - Target roughly 120-200 lines.
+  proposed_solver.py: |
+    - Only orchestrate the outer loop and convergence checks.
+    - Reuse helpers from problem_data/model_ops/proposed_block_a/proposed_block_b only.
+    - Do NOT re-implement subproblem math inline.
+    - Import only build_model/evaluate_solution and the two block exports required by the module plan.
+    - Do NOT import block-specific semantic names such as optimize_physical_block or optimize_resource_block.
+    - Initialize state from model.get('state_init', {}) and avoid assuming keys such as p_init or W_init unless they are provided in that state_init dict.
+    - Treat the model dict as having only three stable top-level keys: state_init, operators, metadata.
+    - Do not access undeclared operator keys directly; rely only on operators listed in the module plan.
+    - Treat evaluate_solution(problem, model, solution) as returning one metrics dict; do not unpack it into tuples.
+    - Treat run_primary_update(...) and run_secondary_update(...) as returning one updated state dict; do not unpack them into tuples.
+    - When constructing SolverResult, use only the exact SolverResult fields shown in the contract summary.
+    - Target roughly 120-180 lines.
+  baseline_solver.py: |
+    - Implement one or two practical engineering baselines only.
+    - Keep the benchmark concise and reproducible.
+    - Do NOT add long benchmark discussion comments.
+    - You may call build_model(problem, seed) from model_ops, but do not import proposed blocks.
+    - Use the exact ProblemData field names from the contract summary.
+    - Treat ProblemData as a dataclass object and access fields with dot notation, never as a dict.
+    - Treat the model dict as having only three stable top-level keys: state_init, operators, metadata.
+    - Do not access undeclared operator keys directly; rely only on operators listed in the module plan.
+    - Treat evaluate_solution(problem, model, solution) as returning one metrics dict; do not unpack it into tuples.
+    - When constructing SolverResult, use only the exact SolverResult fields shown in the contract summary.
+    - Target roughly 100-180 lines.
+  run_validation.py: |
+    - This file should only run cases, collect outputs, and write artifacts.
+    - Reuse validation_cases, proposed_solver, baseline_solver, and problem_data only; do NOT embed solver math here.
+    - Keep outputs exactly aligned with validation_plan.yaml.
+    - Run both solve_proposed and solve_baseline on make_validation_cases().
+    - make_validation_cases() returns list[ProblemData], not (name, problem) tuples.
+    - Derive case_name from index or an optional attribute on ProblemData.
+    - Write outputs/validation_summary.json and outputs/validation_results.csv.
+    - Print a concise summary.
+    - Include executable entrypoint: if __name__ == '__main__': main().
+    - Target roughly 120-200 lines.
+  default: |
+    - Keep the file concise, modular, and single-purpose.

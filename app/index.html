@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WARA Console</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand-block">
+        <div class="brand-mark">W</div>
+        <div>
+          <div class="brand-title">WARA</div>
+          <div class="brand-subtitle">Wireless AutoResearch Agent</div>
+        </div>
+      </div>
+
+      <div class="header-main">
+        <h1 id="topicTitle">WARA Research Workspace</h1>
+        <div id="phaseTrack" class="phase-track"></div>
+      </div>
+
+      <div class="header-meta">
+        <a class="nav-link" href="./review.html">Manuscript Review</a>
+        <span id="runStatus" class="status-pill">idle</span>
+        <span id="workspaceRoot" class="workspace-pill">-</span>
+      </div>
+    </header>
+
+    <section class="control-bar">
+      <form id="runForm" class="control-form">
+        <textarea id="topicInput" rows="2" placeholder="Enter a research topic, then start Phase 1-3."></textarea>
+        <select id="modelSelect"></select>
+        <div class="control-actions">
+          <button id="runBtn" type="submit">Start WARA</button>
+          <button id="refreshBtn" type="button" class="secondary">Refresh</button>
+          <button id="stopBtn" type="button" class="secondary danger">Stop run</button>
+        </div>
+      </form>
+      <div class="model-settings">
+        <div class="settings-head">
+          <div>
+            <strong>LLM API Settings</strong>
+            <span id="modelRateSummary">Select a model to view token pricing.</span>
+          </div>
+          <button id="saveModelConfigBtn" type="button" class="secondary">Save API Settings</button>
+        </div>
+        <label class="active-api-card">
+          <span>
+            <strong id="activeProviderName">Selected provider</strong>
+            <em id="activeKeyStatus">not set</em>
+          </span>
+          <small id="activeProviderMeta">Choose a model to configure its API key.</small>
+          <input id="activeApiKey" type="password" autocomplete="off" placeholder="API key for selected model, leave blank to keep existing">
+          <input id="activeBaseUrl" type="text" autocomplete="off" placeholder="Base URL for selected model">
+        </label>
+      </div>
+    </section>
+
+    <main class="main-layout">
+      <aside class="panel runs-panel">
+        <div class="panel-head">
+          <h2>Runs</h2>
+          <span class="panel-badge" id="historyCount">0</span>
+        </div>
+        <div id="runList" class="run-list"></div>
+      </aside>
+
+      <section class="panel log-panel">
+        <div class="panel-head">
+          <h2>Live Logs</h2>
+          <span class="panel-badge" id="logRunId">idle</span>
+        </div>
+        <div id="currentActivity" class="activity-card">
+          <strong>Current activity</strong>
+          <span>Waiting for a WARA run.</span>
+        </div>
+        <pre id="logBlock" class="log-block">Start WARA to view live run logs here.</pre>
+      </section>
+
+      <aside class="panel pdf-panel">
+        <div class="panel-head">
+          <h2>PDF Preview</h2>
+          <span class="panel-badge" id="selectedPdfName">-</span>
+        </div>
+        <div class="pdf-toolbar">
+          <button id="finalPdfBtn" type="button" class="pdf-btn is-active">Final Research PDF</button>
+          <button id="openPdfBtn" type="button" class="secondary pdf-open-btn">Open in Viewer</button>
+        </div>
+        <div class="pdf-viewer-wrap">
+          <img id="pdfPreviewImage" class="pdf-preview-image" alt="PDF preview">
+          <div id="pdfEmptyState" class="empty-state empty-state--overlay">No preview PDF is available for the current run.</div>
+        </div>
+      </aside>
+    </main>
+
+    <section class="dashboard-strip">
+      <div class="dashboard-card">
+        <span>Model</span>
+        <strong id="metricModel">-</strong>
+        <small id="metricRate">model-specific pricing</small>
+      </div>
+      <div class="dashboard-card">
+        <span>Runtime</span>
+        <strong id="metricRuntime">-</strong>
+        <small>current / selected run</small>
+      </div>
+      <div class="dashboard-card">
+        <span>Tokens</span>
+        <strong id="metricTokens">-</strong>
+        <small>recorded usage</small>
+      </div>
+      <div class="dashboard-card">
+        <span>Cost</span>
+        <strong id="metricCost">-</strong>
+        <small id="metricCostDetail">LLM usage cost</small>
+      </div>
+    </section>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

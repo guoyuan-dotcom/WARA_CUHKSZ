@@ -1,0 +1,173 @@
+phase_id: phase2.2
+slug: convexity_reformulation
+name: convexity_audit_and_reformulation
+variables:
+  - wireless_feasibility_guardrail
+  - topic
+  - handoff_final_title
+  - handoff_theorem_target
+  - handoff_reformulation_path
+  - tractability_route_policy
+  - mathematical_contract_json
+  - system_model_md
+  - problem_formulation_md
+  - core_theory_package_md
+output_schema:
+  required:
+    - convexity_audit_md
+    - reformulation_path_md
+template: |
+  You are writing Phase 2.2 for a wireless communications optimization agent.
+
+  Task:
+  Produce two markdown outputs:
+  1. convexity_audit_md
+  2. reformulation_path_md
+  The legacy output names are kept for pipeline compatibility; semantically this phase is a tractability-route audit and solution-route planning step.
+
+  Background rules:
+  - Stay strictly within wireless communications + optimization + 5G/6G research framing.
+  - Use the Phase 2.1 outputs as the primary source of truth.
+  - Treat mathematical_contract_json as a frozen mathematical interface. Do not rewrite it, expand it, or reinterpret original optimizer variables.
+  - Do not silently replace the original problem with a different surrogate paper topic.
+  - Success-first principle: choose a tractability route that can plausibly become a complete WCL technical section and executable experiment. The goal is not to list risks; it is to select the smallest honest model/route whose proof, implementation, and figures can close.
+  - First-pass quality principle: this phase must construct the route that downstream agents implement; do not leave the central proof, approximation scope, or solver object for a later reviewer to infer.
+  - Be mathematically explicit about which parts are convex, nonconvex, exact, relaxed, or approximated.
+  - If a quantity can be kept exact and convex, say so clearly.
+  - If a claim depends on a modeling choice, state that dependency explicitly.
+  - Be concise. Each markdown output should be compact and high-signal, not exhaustive.
+  - Prefer short tables and bullet points over long prose.
+  - Keep the total response well within JSON limits.
+
+  {wireless_feasibility_guardrail}
+  - Lifecycle boundary:
+    - Phase 2.1 defines the original system model and original optimization problem.
+    - Phase 2.2 audits tractability and derives solution-route / reformulation-only material.
+    - Any auxiliary, lifted, slack, surrogate, transform, relaxation, majorization, or solver-friendly variable introduced here is reformulation-only unless it already appears under mathematical_contract.controls.
+    - Reformulation-only variables must not be pushed back into the original Problem Formulation or treated as original optimizer variables.
+  - Frozen interface rules:
+    - optimizer variables must be exactly the controls defined in mathematical_contract_json;
+    - derived_quantities may appear in objective or constraints only through their definitions;
+    - parameters and random_quantities must never become optimizer variables;
+    - constraints are relations, not variable statuses;
+    - reformulation_only entries must remain outside the original problem.
+  - Do not claim convexity because a method is common in the literature. Audit the exact objective and constraints from Phase 2.1.
+  - Apply mechanism-specific cautions from the dynamic wireless feasibility guardrail only when the current paper context contains the corresponding mechanism.
+  - Matrix square-root, ratio, product, rank, and manifold constraints must be audited as mathematical operations in the current variables rather than by template.
+  - SDR tightness, exact reformulation, or rank-one recovery must either be proved under precise sufficient conditions or removed from the theoretical claim.
+
+  {tractability_route_policy}
+
+  Route-selection rules:
+  - Treat the controller route as a routing prior, not as proof. You may override it only when the frozen mathematical interface and problem formulation justify the override.
+  - Start convexity_audit_md with a section titled `## Route Decision` containing `selected_route`, `controller_route`, and a one-sentence reason.
+  - Valid routes are convex_direct, structured_nonconvex, relaxation_recovery, mixed_discrete_or_manifold, and heuristic_empirical.
+  - Nonconvexity is allowed and can be part of the contribution only when it is naturally caused by the wireless mechanism and the solution route is credible.
+  - If the problem is convex or exactly conic/LP representable, do not invent nonconvexity; explain where the contribution comes from instead.
+  - For convex_direct, do not write only "solve with CVX/CVXPY". The technical value must be one or more of: a mechanism-preserving variable choice, an exact convex/conic representation, a nontrivial equivalence argument, a useful dual/active-constraint/threshold/monotonicity insight, or a clear operating-regime implication to be validated later.
+  - For convex_direct, explicitly audit what wireless mechanism, coupling, KPI, or constraint is preserved by the convex formulation. If the key mechanism disappears, mark the route/direction as weak instead of padding with solver details.
+  - If the Phase 2.1 model is under-specified for the claimed route, do not continue with abstract placeholders. Either (i) select a concrete safe/convex approximation that follows from the stated model, (ii) scope the route as a heuristic/empirical method, or (iii) state that Phase 2.1 must be repaired before algorithm generation.
+  - If the Phase 2.1 model contains mobility, deployment, movable elements, distances, path loss, or propagation geometry, preserve the coordinate convention exactly. Do not repair theory by silently changing horizontal coordinates into full-dimensional coordinates or by adding/removing altitude terms without saying how the convention is represented.
+  - If a movement, propulsion, service-cost, energy-consumption, queueing-cost, or hardware-cost term appears in the frozen model, the route must state the exact expression or solver-relevant properties used by the subproblem. If those properties are absent, route the issue back to Phase 2.1 rather than inventing a proof.
+  - If a perspective, epigraph, fractional, or time-sharing transform is used, identify the physical variables involved. For rate/power/time models, distinguish transmit power from transmit energy and only claim a convex perspective when the expression is mathematically valid in those variables.
+
+  Technical-closure plan:
+  - reformulation_path_md must contain a section titled `## Technical Closure Plan`.
+  - reformulation_path_md must also contain a section titled `## Technical Contribution Contract`.
+  - The plan must be topic-agnostic in structure and topic-specific only in content supplied by the current artifacts. Use general closure dimensions: modeling assumption, mathematical transformation, proof obligation, physical realizability, implementation path, benchmark contrast, and experiment observable. Do not import mechanisms from examples or older runs.
+  - The plan is a positive design interface for the next agents, not a topic-specific warning checklist. Apply only the closure rows that are active in the frozen model; do not introduce absent mechanisms from examples or older runs.
+  - First identify the active mechanisms from explicit evidence in the current artifacts. For each active mechanism, write the artifact evidence and the closure decision. If the evidence is absent, do not mention that mechanism and do not satisfy an imagined checklist.
+  - Do not reason by keyword matching. A word such as robust, covariance, shared, sensing, energy, or uncertainty is not enough by itself; use the actual variables, signal model, receiver model, constraints, and objective supplied by Phase 2.1.
+  - For any active advanced mechanism, the route must close the same general chain: assumption -> deterministic/subproblem expression -> proof scope -> implementation path -> paper KPI. The examples below illustrate this chain for common wireless optimization mechanisms but are not defaults.
+  - In `## Technical Contribution Contract`, first determine the active contribution mode or modes from the current artifacts only. Valid modes are:
+    - exact_model_to_solver_mapping
+    - safe_counterpart_or_certification
+    - iterative_surrogate_or_block_decomposition
+    - relaxation_with_recovery
+    - heuristic_or_empirical_search
+  - For each active mode, report:
+    - artifact evidence;
+    - contribution object;
+    - what Phase 2.3 must write mathematically;
+    - what proof or derivation is actually required;
+    - what may remain scoped as empirical or implementation-only;
+    - what Phase 2.4 must evaluate to support the claim.
+  - Proof requirements are conditional, not universal. Do not force a proposition/theorem/lemma unless the active contribution mode truly needs one.
+  - For `exact_model_to_solver_mapping`, require only the shortest needed equivalence, convexity, or physical-interpretation statement; do not invent iterative convergence claims.
+  - For `safe_counterpart_or_certification`, require the assumption set, deterministic counterpart, guarantee scope, and proof sketch or derivation path that makes the safety claim reproducible.
+  - For `iterative_surrogate_or_block_decomposition`, require the update order, surrogate or decomposition validity conditions, and stopping rule; use convergence language only if the current route supports it.
+  - For `relaxation_with_recovery`, require the relaxed problem, recovery or randomization map, and the scope of any post-recovery guarantee.
+  - For `heuristic_or_empirical_search`, do not ask for theorem-like claims; instead require a clear feasibility evaluator, acceptance rule, and empirical scope statement.
+  - If no active mode needs a standalone proof object, say so explicitly and direct Phase 2.3 to keep the paper claim at the representation/procedure level.
+  - The plan must be constructive, not merely defensive. It should tell Phase 2.3 exactly what mathematical object to implement and tell Phase 2.4 exactly what KPI/regime should show the proposed scheme's benefit.
+  - In that section, give a compact table with these rows:
+    - modeling choice: the exact uncertainty, hardware, receiver, rank/signaling, or coupling assumption used by the method;
+    - deterministic counterpart or subproblem: the exact mathematical object Phase 2.3 should implement;
+    - proof obligation: the shortest checkable statement needed for convexity, equivalence, safety, tightness, or scoped heuristic validity;
+    - implementation obligation: what Phase 2.4 code must actually solve/evaluate;
+    - experiment observable: which paper-defined KPI or operating-regime effect should demonstrate the contribution;
+    - allowed manuscript claim: the strongest claim that remains true under the selected route.
+  - If robust or distributionally robust chance constraints are present, the plan must name one concrete model family and one concrete safe counterpart strategy. Do not write only `\Phi_m\ge0`, "the selected ambiguity model", "safe conic counterpart", or "standard robust optimization" without specifying the ambiguity set, uncertainty radius, support/moment assumptions, and the form of the safe constraint.
+  - If a safe counterpart is the technical contribution, include a `## Counterpart Proposition Draft` subsection. It must state: assumption set, event margin, deterministic sufficient condition, proof idea, and exact claim scope. If the exact counterpart cannot be written from Phase 2.1, mark the route as `needs_formulation_repair` or `heuristic_empirical`; do not let a placeholder proceed as a theorem-level method.
+  - If reciprocal/product epigraphs such as \(t\rho\ge 1\) are used, state the exact convex representation or monotone substitution that makes them solver-ready.
+  - If matrix-valued transmit controls or lifted beam variables are used, explicitly decide whether the implementation is covariance-domain Gaussian signaling, high-rank transmission, rank-one beamforming, SDR with recovery, or another physically realizable route.
+  - If any shared, auxiliary, non-information, control, sensing, energy, common, pilot, jamming, artificial, or service signal/resource appears in another terminal's metric, carry forward the receiver/protocol information-pattern assumption from Phase 2.1; do not leave it implicit.
+  - If the objective minimizes transmitter resource, state the nontrivial QoS/reliability/service constraints and a paper-facing KPI/tradeoff that will make the resource-efficiency contribution visible.
+
+  User topic:
+  {topic}
+
+  Phase 1 inherited title:
+  {handoff_final_title}
+
+  Phase 1 inherited theorem target:
+  {handoff_theorem_target}
+
+  Phase 1 inherited reformulation hint:
+  {handoff_reformulation_path}
+
+  Frozen mathematical interface from Phase 2.1:
+  {mathematical_contract_json}
+
+  Phase 2.1 system model:
+  {system_model_md}
+
+  Phase 2.1 problem formulation:
+  {problem_formulation_md}
+
+  Phase 2.1 core theory package:
+  {core_theory_package_md}
+
+  Output requirements:
+  - Return valid JSON only.
+  - Keys must be exactly:
+    - convexity_audit_md
+    - reformulation_path_md
+  - Each value must be a markdown string.
+
+  The convexity audit should identify:
+  - optimization variables
+  - objective structure
+  - each constraint block
+  - whether each block is convex / affine / DC / bilinear / fractional / manifold-like
+  - the selected tractability route and the true source(s) of technical difficulty, which may be convex-direct, structured nonconvex, relaxation/recovery, mixed/discrete/manifold, or heuristic/empirical
+  - what can be preserved exactly versus what likely needs approximation or block decomposition
+
+  The reformulation path should identify:
+  - the original frozen formulation and the selected solution route
+  - the proposed formulation, direct solver, relaxation, decomposition, or heuristic/proxy route required by that branch
+  - recommended algorithm family selected from the current problem structure and route decision, not from a fixed template
+  - for convex_direct, the exact representation used by the solver, the physical-variable recovery map if any, and the strongest structural insight that can be stated without overclaiming
+  - what each block solves
+  - what intermediate surrogate or lifted variables are introduced
+  - what claims seem provable versus only empirically checkable
+  - the Technical Closure Plan described above, written as positive instructions for the downstream algorithm and experiment agents
+
+  Length guidance:
+  - convexity_audit_md: about 500-900 words
+  - reformulation_path_md: about 500-900 words
+
+  Before returning, verify internally:
+  1. The selected route gives Phase 2.3 a concrete algorithm object, not only a diagnosis.
+  2. The Technical Closure Plan states what can be claimed, what must be implemented, and what KPI will demonstrate the claim.
+  3. Any unresolved proof/modeling risk is scoped as a route limitation rather than promoted to a theorem-level claim.

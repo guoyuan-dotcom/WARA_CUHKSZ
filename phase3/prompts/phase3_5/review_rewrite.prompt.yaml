@@ -1,0 +1,102 @@
+phase_id: phase3.5
+slug: paper_review_rewrite
+name: full_paper_section_rewriter
+variables:
+  - review_facts_json
+  - mathematical_contract_json
+  - verified_reference_bank_json
+  - current_sections_json
+output_schema:
+  required:
+    - abstract_tex
+    - introduction_tex
+    - system_model_problem_formulation_section_tex
+    - proposed_solution_section_tex
+    - numerical_results_section_tex
+    - conclusion_tex
+    - review_summary_md
+template: |
+  You are revising a full IEEE Wireless Communications Letters draft in phase3.5_paper_review_rewrite_phase.
+
+  Task:
+  Return valid JSON only with exactly these keys:
+  - abstract_tex
+  - introduction_tex
+  - system_model_problem_formulation_section_tex
+  - proposed_solution_section_tex
+  - numerical_results_section_tex
+  - conclusion_tex
+  - review_summary_md
+
+  Writing objective:
+  - Rewrite the supplied paper sections into cleaner IEEE WCL style.
+  - Fix awkward openings, unnatural transitions, repeated wording, inconsistent terminology, and weak contribution framing.
+  - Enforce abbreviation discipline:
+    - this is a full-paper rule, not only an abstract rule
+    - the abstract and main body are separate acronym scopes
+    - first appearance of every technical acronym or abbreviation in each scope should use full descriptive name plus abbreviation in parentheses when supported
+    - a definition in abstract_tex does not satisfy the first-use requirement in the Introduction or later body sections
+    - later appearances within the same scope should use the abbreviation only
+    - do not define the same abbreviation twice in one local section or scope; benchmark items should use either `ACRONYM: full descriptive name` or `full descriptive name (ACRONYM): description`, not both in the same item
+    - do not rely on a fixed acronym list; infer definitions from the supplied paper context, and avoid an abbreviation if the full form is not trustworthy
+  - Abstract-specific abbreviation rule:
+    - every technical acronym that appears in abstract_tex must be explicitly expanded on first appearance
+    - if a trustworthy full form is unavailable from the supplied material, avoid the acronym in the abstract
+    - do not leave any technical acronym, metric acronym, system acronym, or method acronym unexplained in the abstract
+    - if a method short name is used in the abstract, define it immediately after the first full method phrase
+  - Keep method naming consistent across all sections.
+  - Improve body citation placement where appropriate, using only citation keys from the verified reference bank.
+  - Do not aggressively compress the Numerical Results section into a shorter or flatter summary.
+  - Preserve the insight-driven four-paragraph structure of the Numerical Results section unless a sentence is clearly redundant or unsupported.
+  - Keep the simulation-setup paragraph plus the three result-interpretation paragraphs substantial and paper-like.
+  - For compact paper tables similar to the current Table~I, prefer a single-column \begin{table}[!t] rather than a deferred wide table.
+
+  Important rules:
+  - Do not change the implemented problem, algorithm, benchmark, or numerical claims.
+  - Treat mathematical_contract_json as the frozen original-problem interface. Do not rewrite, extend, or reinterpret the original optimizer, objective, constraints, canonical notation, channels, receiver classes, or physical KPIs.
+  - If you touch system_model_problem_formulation_section_tex or proposed_solution_section_tex, restrict the change to prose, citation placement, local equation formatting, and unsupported wording. Do not introduce auxiliary/reformulation variables into the original Problem Formulation.
+  - Reformulation-only variables from the Proposed Solution may remain only in the proposed-solution section; they must not be presented as original physical design variables.
+  - Do not invent new experiments, results, or references.
+  - Do not mention pipelines, phases, LLMs, Codex, harnesses, or code generation.
+  - Perform sentence-level and paragraph-level writing refinement, not structural redesign of the technical LaTeX.
+  - Keep all section boundaries compatible with the existing paper assembly:
+    - abstract_tex must include both the abstract and IEEEkeywords environments
+    - introduction_tex must begin with \section{Introduction}
+    - system_model_problem_formulation_section_tex must NOT add a top-level section heading
+    - proposed_solution_section_tex must NOT add a top-level section heading
+    - numerical_results_section_tex must keep a \section{Numerical Results} heading
+    - conclusion_tex must begin with \section{Conclusion}
+  - Preserve existing equation labels, figure labels, table labels, algorithm labels, and cross-reference targets.
+  - Preserve or improve equation display formatting: one displayed equation should define only one mathematical quantity or relation, and each equation/align line may contain at most one primary equality or inequality relation.
+  - Do not combine multiple definitions with `\qquad` or chained forms such as `a=b=c`; split them into separate displayed equations if you touch that text.
+  - Do not rename labels such as fig:..., tab:..., eq:..., alg:..., or introduce new theorem/proposition/proof environments unless they already exist in the supplied section.
+  - You may add or adjust citations inside body sections, but only using keys that appear in verified_reference_bank.
+  - If a citation is added, it must support a concrete background, method foundation, benchmark, or related-work statement.
+  - Do not overload technical sections with citations; use them where they materially improve scholarly grounding.
+
+  Review focus checklist:
+  1. Fix awkward discourse markers such as unexplained "This observation..." openings.
+  2. Ensure abbreviations are introduced properly on first use, with the abstract checked most strictly.
+  3. Ensure later uses switch to the short form consistently.
+  4. Ensure the Introduction, Proposed Solution, Numerical Results, and Conclusion all align with the same paper objective.
+  5. Ensure technical body sections include a reasonable number of foundational or benchmark references when appropriate.
+  6. Preserve figure/table labels and numerical content already present in the Numerical Results section.
+  7. Preserve the richer observation-interpretation-implication structure in Numerical Results; do not rewrite it into a brief plot description.
+  8. Rewrite any Introduction related-work paragraph that reads like a card summary or ordinal list, such as "The first ... The second ...", into natural IEEE-style prose.
+
+  Output discipline:
+  - Return JSON only.
+  - Do not include markdown fences.
+  - review_summary_md should briefly describe what was improved.
+
+  Review facts JSON:
+  {review_facts_json}
+
+  Frozen mathematical interface JSON:
+  {mathematical_contract_json}
+
+  Verified reference bank JSON:
+  {verified_reference_bank_json}
+
+  Current sections JSON:
+  {current_sections_json}

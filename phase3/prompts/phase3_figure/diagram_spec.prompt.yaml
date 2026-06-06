@@ -1,0 +1,130 @@
+phase_id: phase3.figure
+slug: paper_diagram_planning
+name: generic_paper_diagram_spec
+variables:
+  - topic
+  - current_paper_brief_json
+  - system_model_md
+  - problem_formulation_md
+  - proposed_solution_md
+  - numerical_evidence_json
+output_schema:
+  required:
+    - diagram_type
+    - figure_title_short
+    - caption_seed
+    - nodes
+    - edges
+    - containers
+    - branches
+    - outputs
+    - paper_placement
+    - visual_priorities
+    - banned_additions
+template: |
+  You are planning one clean system/scenario figure for an IEEE wireless-communications letter.
+
+  Task:
+  Return valid JSON only. Do not return Markdown.
+
+  The figure must be general enough for any paper topic. Do not assume that the paper has transmitters, receivers, users, channels, antennas, RIS, UAVs, energy harvesting, sensing, relays, jammers, neural networks, controllers, or datasets unless they are explicitly present in the supplied paper material.
+
+  Primary figure policy:
+  - Prefer a physical system/scenario figure whenever the supplied system model contains physical wireless entities such as APs, users, UEs, BSs, CPU/cloud, antennas, channels, links, fronthaul, backhaul, clusters, beams, or service regions.
+  - For cell-free massive MIMO papers, the figure should normally be a deployment/scenario figure with distributed APs, users, a CPU/cloud, fronthaul links, and selected AP-user serving links.
+  - Do not turn the figure into an algorithm flowchart merely because the proposed solution or numerical evidence contains an algorithm. The algorithm can be implied by selected links, resource controls, or a small optimization/controller block if the system model supports it.
+  - Use "algorithm_flow" only when the supplied paper material contains no drawable physical wireless scenario.
+  - Keep visible text minimal. The figure should look like a recent IEEE wireless paper system model figure, not a workflow diagram.
+
+  Choose the most faithful diagram type:
+  - "system_architecture": use whenever physical entities/modules and their connections are present.
+  - "signal_flow": use when the paper is mainly about information, control, energy, data, or feedback flow.
+  - "algorithm_flow": use only when no physical system/scenario figure is supported by the supplied material.
+  - "optimization_structure": use only when no physical system/scenario figure is supported and the optimization structure is the clearest contribution.
+  - "hybrid_summary": use only when a compact scenario plus one small optimization/controller block is necessary.
+
+  Required JSON schema:
+  {
+    "diagram_type": "system_architecture | signal_flow | algorithm_flow | optimization_structure | hybrid_summary",
+    "figure_title_short": "short title, at most 8 words",
+    "caption_seed": "one concise caption idea, at most 20 words",
+    "nodes": [
+      {
+        "id": "stable_ascii_id",
+        "label": "short visible label, at most 3 words",
+        "role": "entity | processing | variable | objective | constraint | metric | data | algorithm_step | environment | terminal | other",
+        "group": "optional high-level group label"
+      }
+    ],
+    "edges": [
+      {
+        "from": "node_id",
+        "to": "node_id",
+        "label": "optional short label, at most 2 tokens; leave blank when possible",
+        "style": "directed | wireless | feedback | dependency | branch"
+      }
+    ],
+    "containers": [
+      {
+        "id": "stable_ascii_id",
+        "label": "short visible label",
+        "contains": ["node_id"],
+        "style": "solid | dashed"
+      }
+    ],
+    "branches": [
+      {
+        "from": "node_id",
+        "label": "optional branch label",
+        "to": ["node_id"]
+      }
+    ],
+    "outputs": [
+      {
+        "id": "stable_ascii_id",
+        "label": "short visible label",
+        "source": "node_id"
+      }
+    ],
+    "paper_placement": {
+      "insert_after": "Introduction",
+      "figure_environment": "figure*",
+      "float_placement": "!t",
+      "latex_width": "0.7\\linewidth"
+    },
+    "visual_priorities": [
+      "3 to 5 short priorities for what the image must emphasize"
+    ],
+    "banned_additions": [
+      "topic-specific elements that must not be added because they are absent from this paper"
+    ]
+  }
+
+  Fidelity rules:
+  - Every node, edge, container, branch, and output must be grounded in the supplied paper material.
+  - Prefer 6 to 10 visible nodes. If the paper is complex, compress repeated or secondary components.
+  - Use representative AP/user nodes when the supplied paper material clearly contains repeated APs or users.
+  - Use short labels. Do not include equations, full constraints, full objective functions, parameter lists, or long explanatory text.
+  - Do not include a legend, footnote, reference list, title banner, or caption text inside the image.
+  - Set paper_placement exactly as shown: insert_after "Introduction", figure_environment "figure*", float_placement "!t", and latex_width "0.7\\linewidth".
+  - If the paper material is insufficient to justify a physical system diagram, choose "algorithm_flow" or "optimization_structure" instead of inventing physical entities.
+  - If a common wireless component is absent from the paper material, put it in banned_additions rather than drawing it.
+  - Avoid text-heavy labels such as solver names, iterative update names, equation symbols, and internal variable names unless they are necessary for identifying the system component.
+
+  Topic:
+  {topic}
+
+  Current paper brief JSON:
+  {current_paper_brief_json}
+
+  System model:
+  {system_model_md}
+
+  Problem formulation:
+  {problem_formulation_md}
+
+  Proposed solution:
+  {proposed_solution_md}
+
+  Numerical/evidence summary JSON:
+  {numerical_evidence_json}

@@ -1,0 +1,57 @@
+phase_id: phase3.figure
+slug: paper_diagram_image_prompt
+name: generic_paper_diagram_image_prompt
+variables:
+  - diagram_spec_json
+output_schema:
+  required:
+    - image_prompt
+template: |
+  Create one clean image-generation prompt from the diagram specification below.
+
+  The generated image must be a clean system/scenario figure for an IEEE wireless-communications letter.
+  It should resemble a recent IEEE wireless paper system model figure with physical entities and links, not a text-heavy algorithm workflow.
+
+  Paper integration contract:
+  - The final LaTeX wrapper uses \begin{figure*}[!t].
+  - The final image width is 0.7\linewidth.
+  - The figure is inserted immediately after the Introduction and before the System Model section.
+  - Compose a centered landscape image with enough outer whitespace for readability at 0.7\linewidth.
+
+  Hard fidelity rule:
+  Use only the nodes, edges, containers, branches, outputs, and labels in diagram_spec_json. Do not infer or add any missing domain element. Words such as transmitter, receiver, user, channel, antenna, RIS, UAV, energy harvester, sensor, relay, jammer, controller, neural network, or dataset may appear only if they already appear in diagram_spec_json.
+
+  Visual style:
+  - Soft pastel colors such as light blue, green, yellow, and warm gray.
+  - White background.
+  - Use pictorial icons for physical entities whenever possible.
+  - Use small rounded labels only for essential entities.
+  - Use dashed translucent regions for containers when container style is dashed.
+  - Use smooth wireless arcs or thin lines for radio links and thin wired lines for fronthaul/backhaul.
+  - Friendly IEEE system-model infographic style.
+  - Clean, balanced, uncluttered layout.
+
+  Layout rules:
+  - For "system_architecture" or "signal_flow", place the physical wireless deployment in the center and arrange CPU/cloud/fronthaul/control entities around it.
+  - If APs and users are listed, draw multiple AP icons and multiple user icons distributed over a service area. Show selected AP-user serving links with clear but light colored wireless strokes.
+  - If CPU/cloud/fronthaul is listed, draw a small cloud/server icon and wired fronthaul links from APs to the CPU/cloud.
+  - For "algorithm_flow", arrange steps top-to-bottom or left-to-right with clear iteration/feedback arrows.
+  - For "optimization_structure", place variables, objective, constraints, solver, and metrics as a compact dependency graph.
+  - For "hybrid_summary", keep the architecture on one side and the method/metric flow on the other side without overcrowding.
+  - Put contained nodes inside their declared container boxes.
+  - Use edge labels exactly as specified, keeping them short and readable.
+  - Use output nodes as small terminal blocks.
+
+  Important constraints:
+  - Do not include equations.
+  - Do not include long text.
+  - Do not include a legend box.
+  - Do not include a title banner or caption inside the image.
+  - Do not include extra decorative objects that are not in the specification.
+  - Do not draw math-variable labels or subscripted optimization variables unless such a label is explicitly present in diagram_spec_json and essential.
+  - Prefer unlabeled control/dependency arrows over math-variable edge labels.
+  - Keep all labels readable.
+  - Avoid text-heavy boxes. Prefer icons and short labels.
+
+  Diagram specification JSON:
+  {diagram_spec_json}

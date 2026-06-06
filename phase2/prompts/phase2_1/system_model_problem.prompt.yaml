@@ -1,0 +1,224 @@
+phase_id: phase2.1
+slug: system_model_problem_formulation
+name: system_model_problem_markdown
+variables:
+  - wireless_feasibility_guardrail
+  - topic
+  - handoff_final_title
+  - handoff_problem_statement
+  - handoff_wireless_scenario
+  - handoff_objective
+  - handoff_variables
+  - handoff_core_constraints
+  - handoff_nonconvexity
+  - handoff_theorem_target
+  - handoff_reformulation_path
+  - handoff_claimed_contribution
+  - taxonomy_layer_lines
+  - synthesis_excerpt
+output_schema:
+  required:
+    - mathematical_contract
+    - system_model_md
+    - problem_formulation_md
+    - core_theory_package_md
+template: |
+  You are writing Phase 2.1 for a wireless communications optimization agent.
+
+  Task:
+  Produce one mathematical interface contract and three markdown outputs:
+  1. mathematical_contract
+  2. system_model_md
+  3. problem_formulation_md
+  4. core_theory_package_md
+
+  Background rules:
+  - Stay strictly within wireless communications + optimization + 5G/6G research framing.
+  - Use the Phase 1 handoff as the anchor. Do not drift to a different topic.
+  - Do not rewrite the topic into a different wireless sub-area unless the handoff already requires it.
+  - Be precise and technical, but do not yet derive the full algorithm.
+  - Success-first principle: formulate a paper problem that can be closed technically, implemented faithfully, and evaluated with system-performance KPIs. Do not leave the core contribution as a placeholder for later phases.
+  - First-pass quality principle: this first formulation must already be a credible research construction, not a loose draft for review to rescue. If the model, objective, constraint, or KPI cannot be closed from the handoff, state the ambiguity in core_theory_package_md and avoid overclaiming.
+  - This phase should define only the original system model and original optimization problem. Later phases will derive reformulations from the contract.
+  - Do not output JSON schema explanations or commentary outside the requested fields.
+  - Be concise and structured. Prefer short equations and short tables.
+  - Output-length contract: the entire JSON response must remain compact and parseable. Keep system_model_md, problem_formulation_md, and core_theory_package_md to short paper-facing notes rather than full manuscript prose. Avoid Markdown tables unless they are essential; use compact bullets instead. Do not exceed roughly 350 words per markdown field.
+  - Equation readability is part of the technical contract even in Markdown drafts:
+    - do not place two independent definitions on one displayed line with `\qquad`, commas, or semicolons;
+    - do not write chained equalities such as `a=b=c`; define the intermediate quantity in prose or in a separate displayed line;
+    - do not write chained inequalities such as `a\leq b\leq c`; use set-membership notation such as `b\in[a,c]` or split the bounds into separate constraint lines;
+    - if a formal optimization display uses aligned lines, each objective or constraint line must contain at most one primary equality or inequality relation.
+  - Do not write long tutorials or broad background exposition.
+  - Treat the Phase 1 declared variables as a hard scope contract. Do not add decision variables, receiver classes, signal streams, protocol phases, or hardware blocks that are not listed or directly implied there.
+  - Treat the Phase 1 handoff and synthesis excerpt as the only sources of topic-specific mechanisms. Do not import familiar wireless mechanisms, algorithms, metrics, baselines, receivers, or hardware blocks unless the handoff explicitly contains them.
+  - Scope guards are generation rules, not manuscript content. Do not write negative exclusion lists unless excluding a mechanism is itself a stated contribution in the handoff.
+  - Separate physical control variables from derived auxiliary quantities. The original optimization problem should optimize only controllable design variables; performance metrics, response variables, slack variables, and surrogate variables should be written as functions/definitions unless the handoff explicitly says they are independent decision variables.
+
+  Mathematical interface contract:
+  - The mathematical_contract is the invariant interface consumed by later writing and algorithm phases. It must be an object, not prose.
+  - Separate mathematical status from usage. Each symbol has exactly one mathematical status, but it may be used in the objective and/or constraints.
+  - Valid mathematical status values are:
+    - control
+    - parameter
+    - random_quantity
+    - derived_quantity
+    - reformulation_only
+  - Objective terms and constraints are not mathematical statuses. They describe how controls, parameters, random quantities, and derived quantities are used.
+  - Use these exact keys:
+    - controls
+    - parameters
+    - random_quantities
+    - derived_quantities
+    - objective
+    - constraints
+    - reformulation_only
+    - notation_to_preserve
+  - controls entries must include symbol, status="control", meaning, domain, and appears_in_optimizer=true.
+  - parameters entries must include symbol, status="parameter", meaning, source when known, and appears_in_optimizer=false.
+  - random_quantities entries must include symbol, status="random_quantity", meaning, distribution_or_assumption, and appears_in_optimizer=false.
+  - derived_quantities entries must include symbol, status="derived_quantity", meaning, definition, depends_on, used_in, and allowed_in_optimizer=false.
+  - objective must be an object with sense ("max" or "min"), expression, meaning, and terms. Each term should include expression and uses_symbols.
+  - constraints must be a list of objects with id, relation, meaning, and uses_symbols.
+  - constraints must be true restrictions on the physical controls, either directly or through a derived quantity that depends on the controls. Do not put pure parameter-domain, model-validity, or admissibility conditions such as near-field distance validity, positive noise power, nonnegative weights, fixed geometry, or nonzero constants into mathematical_contract.constraints.
+  - State parameter-domain and model-validity conditions in system_model_md prose or core_theory_package_md assumptions, not as lines of problem (P0).
+  - reformulation_only entries must include symbol, status="reformulation_only", meaning, allowed_in_original_problem=false, and intended_later_phase.
+  - notation_to_preserve entries should include canonical_symbol, meaning, and aliases_forbidden when useful.
+  - A derived quantity such as a performance KPI, resource usage, response metric, reliability metric, sensing metric, or queueing metric remains a derived_quantity even if it appears in the objective or constraints.
+  - A constraint is a relation, not a quantity. Put it only under constraints, never as a symbol status.
+  - A control variable may appear in the optimizer. A derived quantity may appear in objectives or constraints only through its defined function. A reformulation-only auxiliary must not appear in the original problem. A parameter must never appear in the optimizer.
+  - The problem_formulation_md must follow this contract exactly.
+  - The core_theory_package_md is a compatibility handoff for Phase 2.2 reformulation notes only. It must not rewrite the original optimization problem and must not send reformulation-only symbols back into system_model_md or problem_formulation_md.
+
+  Technical-closure requirements:
+  - Apply these requirements through general technical-closure dimensions, not through a fixed topic template. For the current paper, identify which dimensions are active: uncertainty/reliability, physical signaling/realizability, receiver/protocol information pattern, coupling/nonconvexity source, relaxation/recovery, approximation/surrogate scope, benchmark contrast, and experiment-observable KPI. Do not introduce a dimension or mechanism that is absent from the Phase 1 handoff.
+  - Treat the examples below as conditional examples only, not defaults. If the current handoff does not contain uncertainty, covariance, auxiliary signaling, rank, nonlinear hardware, mobility, discreteness, or another advanced mechanism, do not add it merely because it appears in this prompt.
+  - For every active advanced modeling device, close the same generic chain in this phase: modeling assumption -> mathematical expression -> tractability implication -> implementation obligation -> paper-facing KPI/evidence. The concrete device may be robust uncertainty, nonlinear hardware response, mobility/trajectory coupling, discrete scheduling, distributed coordination, near-field propagation, queue/service dynamics, or another mechanism supplied by Phase 1.
+  - The paper must have a research-construction kernel before writing begins. For each active advanced device, define the exact paper mechanism in this phase rather than leaving it to review: what is uncertain or coupled, what the controller optimizes, what deterministic object the next phase can derive, and what paper KPI can reveal the gain.
+  - For any mobility, deployment, movable-element, aerial/ground-node, or position-dependent channel model, choose one coordinate convention before writing distances or path loss. Either use horizontal coordinates plus a separately defined altitude/height term, or use full-dimensional coordinates with lower-dimensional nodes embedded into the same space. Do not subtract vectors with different dimensions, and do not add an altitude/height term after already using full-dimensional coordinates.
+  - For any propagation, path-loss, near-field, distance, or geometry-dependent term, state the coordinate convention immediately before the first distance/channel equation. The convention must be reflected consistently in mathematical_contract definitions, system_model_md, problem_formulation_md, and core_theory_package_md.
+  - If an energy-consumption, propulsion, movement, service-cost, queueing-cost, or hardware-cost function appears in the objective or constraints, define either its explicit expression or the exact mathematical properties and parameters that later phases may use. Do not leave a generic function such as \(E_{\rm prop}(\cdot)\), \(C(\cdot)\), or \(g(\cdot)\) without solver-relevant properties.
+  - If a time-sharing, scheduling, power, energy, or rate expression is later intended to use a perspective/epigraph route, decide in this phase whether the physical control is power, energy, or time allocation. The rate/utility expression must match that choice; do not claim a perspective structure unless the variables make it valid.
+  - If the topic uses robust, chance-constrained, distributionally robust, outage, ambiguity, CSI-error, location-error, or sample-uncertainty language, choose a concrete uncertainty/ambiguity model in this phase. Examples of model families are bounded ellipsoidal uncertainty, box/norm-bounded uncertainty, Gaussian error, moment/Cantelli ambiguity, Bernstein-type approximation, scenario/sample approximation, or Wasserstein ambiguity. The chosen model must define its parameters and symbols; do not write generic objects such as "the selected ambiguity set" or "\(\mathcal D\)" without specifying what they contain.
+  - For robust/chance/distributionally robust constraints, core_theory_package_md must include a `## Reliability Counterpart Seed` subsection with: the uncertainty or ambiguity set definition, the event margin before reformulation, the intended deterministic safe expression family, the safety implication to be proved, the convexity or conservatism scope, and the reliability diagnostic Phase 2.4 should emit. Do not use `\Phi_m`, `\mathcal C_\Phi`, "selected ambiguity model", or "standard safe counterpart" as a substitute for this seed.
+  - If chance/outage tolerances are denoted by \(\epsilon\), do not also use \(\epsilon\) for CSI uncertainty radius or model radius. Use a distinct symbol such as \(\delta_h\), \(r_h\), or \(r_{\rm CSI}\) for uncertainty size.
+  - If matrix-valued transmit controls such as covariance or lifted beam variables are controls, state the physical signaling interpretation. Either allow covariance-domain/multi-stream Gaussian signaling, state a single-stream/rank-one transmission requirement, or put the recovery/realization obligation in core_theory_package_md. Do not claim that recovery is unnecessary unless the physical implementation is explained.
+  - If any non-information, shared, auxiliary, control, sensing, energy, common, jamming, pilot, artificial, or service signal/resource appears in another receiver's metric as interference or useful signal, state the receiver/protocol information pattern. The metric expression must match whether that receiver cannot decode it, does not cancel it, treats it as noise, jointly decodes it, or cancels it.
+  - If the objective is transmit-power, energy, or resource minimization, make clear that the research claim is resource efficiency under nontrivial QoS/reliability/service constraints, not the novelty of minimizing transmitter power by itself. Define at least one paper-facing performance KPI or constraint-driven operating-regime metric that later experiments can plot.
+  - If the objective is resource minimization, state the active operating-regime parameter that should make the resource saving visible, such as a service threshold, reliability radius, load, channel-severity parameter, mobility/deployment severity, hardware-response parameter, or analogous paper-defined knob. Avoid using only the resource upper bound as the main experimental x-axis unless the model makes that bound active.
+  - The core_theory_package_md must include a short `## Technical Closure Seed` section listing: concrete modeling choice, intended tractability route, proof obligation, implementation obligation, benchmark contrast, and experiment observable. These are positive design targets for Phase 2.2/2.3, not review-only warnings.
+
+  {wireless_feasibility_guardrail}
+
+  System-model organization requirements:
+  - The system_model_md must read like a publishable model section, not loose notes.
+  - Maintain clear logical flow between quantities without excessive explanatory prose.
+  - Organize it in this order: network entities and topology; channel and signal model; decision and hardware variables; performance quantities; modeling assumptions and approximations.
+  - Keep each paragraph single-purpose. Do not mix topology, signal equations, constraints, and claims in one paragraph.
+  - Define every symbol before or immediately after its first use, including dimensions and physical meaning.
+  - If coordinates, distances, propagation geometry, mobility, deployment, or movable elements appear, define the coordinate convention before the first path-loss/channel equation. Make every location vector live in compatible dimensions or explicitly embed/project it.
+  - Do not introduce a symbol unless it is later used by the objective, constraints, benchmark, or algorithm.
+  - If the handoff contains an ambiguous architecture or hardware term, define it as a physical partition, signal path, coupling coefficient, or protocol choice before treating it as a contribution.
+  - Write the model as a restrained derivation, not as a list of definitions and not as a tutorial. The reader should be able to follow the physical or protocol chain implied by the current handoff, from network entities to the quantities optimized in the problem.
+  - Use standard IEEE mathematical lead-ins such as "is given by", "can be written as", "is expressed as", "we obtain", "we define", and "we denote". First-person plural is appropriate when it sounds natural, e.g., "We consider", "We denote", and "We define".
+  - Avoid repetitive bare-definition patterns such as "The signal is", "The observation is", "The metric is", and "The utility is" when they are not followed by a proper mathematical transition. Do not avoid normal phrases such as "is given by".
+  - If the handoff includes a resource-splitting, mode-selection, coupling, auxiliary, or hardware-control variable, state its physical role in no more than one concise sentence.
+  - If the handoff includes noise terms or impairments injected at different points of a signal chain, preserve that distinction in no more than one concise sentence.
+  - If the handoff includes a nonlinear hardware, energy, sensing, queueing, or utility mapping, explain the physical meaning of its parameters and offset/normalization terms in one concise sentence.
+  - When deriving powers, covariances, performance metrics, response quantities, sensing metrics, or other KPIs from independent streams or random variables, include a compact expectation- or covariance-based transition before the final closed-form expression.
+  - Do not explain every equation after it is displayed; add post-equation interpretation only when it resolves a modeling ambiguity.
+  - Avoid tutorial-style exposition; write for a communications-theory reviewer, not for a beginner.
+  - Avoid emphatic or AI-like adverbs and connectors such as "critically", "importantly", "specifically", "formally", and "central".
+  - Avoid meta-writing such as "this provides the quantities needed below" or "this exposes the tradeoff".
+  - Prefer short technical sentences over long explanatory clauses.
+  - Do not over-describe benchmarks, algorithms, or simulations in the System Model. The model should motivate the quantities later optimized, not preview numerical results.
+
+  Problem-formulation organization requirements:
+  - The problem_formulation_md must first explain what engineering decision the optimization problem makes and why the objective/constraints matter.
+  - Do not make the subsection a formula dump. Use one short paragraph to connect the system model to the optimization task before the formal problem.
+  - State whether the problem is a maximization or minimization and justify the sign convention if a utility is converted to a loss.
+  - For minimization objectives, avoid presenting "transmit power minimization" as the contribution by itself. Tie the objective to the service guarantees, robustness requirements, or operating regime that make the minimum-resource formulation scientifically meaningful.
+  - In the original problem display, the optimizer must include only physical controllable variables that the handoff declares as controls, such as resource-allocation, signal-design, scheduling, hardware-control, trajectory, or mode-selection variables. Do not include derived KPI variables, response variables, slack variables, or algorithmic auxiliaries in the original optimizer line unless Phase 1 explicitly declares them as independent controls.
+  - If a derived KPI or response variable is useful for readability, define it before the problem as a function of the physical controls and use that function in the objective/constraints. Do not turn it into an independent optimization variable in the original optimization problem.
+  - Do not introduce equivalent transformations, threshold substitutions, lifted variables, or auxiliary-variable formulations in problem_formulation_md unless the Phase 1 handoff defines the original problem that way.
+  - If a lifted or auxiliary-variable equivalent formulation is needed for later algorithms, put it only in core_theory_package_md as reformulation-only notes, not as the original problem.
+  - Present the formal optimization in standard paper form: use \(\max\) or \(\min\), not the full words "maximize" or "minimize"; use "s.t.", not "subject to", in the formal display.
+  - Name the original optimization problem explicitly as \((P0)\) or \((\mathcal{P}_0)\). In prose, refer to it directly as "problem (P0)" or "(P0)", not as an equation number.
+  - Do not write "Problem \(\eqref{...}\)" or similar equation-number references for the optimization problem.
+  - Keep constraint ids stable and meaningful because the LaTeX phase must number and label each original objective/constraint line for later references.
+  - Constraint ids are internal artifact ids. Do not display tags such as `(C-PWR)`, `(C-NF)`, `(C-WGT)`, `(C-NOISE)`, `C1`, or `C2` inside paper-facing equations. The paper-facing problem should use LaTeX labels for references instead.
+  - Every constraint must have a physical or algorithmic meaning, either in the text immediately before/after the display or in a compact constraint-meaning table.
+  - Keep auxiliary/surrogate quantities separate from the original problem; clearly mark them as surrogate, approximation, or reformulation-only if they are not the physical target.
+
+  General formulation requirements:
+  - Apply mechanism-specific requirements only when the dynamic wireless feasibility guardrail above detects those mechanisms in the current handoff or paper context.
+  - The core_theory_package_md must be treated only as Phase 2.2 reformulation notes. Never claim that a later subproblem is convex unless the required variables, fixed blocks, and transform assumptions are explicitly present.
+
+  User topic:
+  {topic}
+
+  Phase 1 final title:
+  {handoff_final_title}
+
+  Phase 1 problem statement:
+  {handoff_problem_statement}
+
+  Phase 1 wireless scenario:
+  {handoff_wireless_scenario}
+
+  Phase 1 objective:
+  {handoff_objective}
+
+  Phase 1 declared variables:
+  {handoff_variables}
+
+  Phase 1 core constraints:
+  {handoff_core_constraints}
+
+  Phase 1 convexity/tractability summary:
+  {handoff_nonconvexity}
+
+  Phase 1 theorem target:
+  {handoff_theorem_target}
+
+  Phase 1 reformulation path:
+  {handoff_reformulation_path}
+
+  Phase 1 contribution hypothesis:
+  {handoff_claimed_contribution}
+
+  Phase 1 taxonomy layers:
+  {taxonomy_layer_lines}
+
+  Phase 1 synthesis excerpt:
+  {synthesis_excerpt}
+
+  Output requirements:
+  - Return valid JSON only.
+  - Keys must be exactly:
+    - mathematical_contract
+    - system_model_md
+    - problem_formulation_md
+    - core_theory_package_md
+  - mathematical_contract must be a JSON object with the exact keys listed above.
+  - system_model_md, problem_formulation_md, and core_theory_package_md must be markdown strings.
+
+  The markdown should be contract-driven rather than exhaustive. It should give later phases only the material needed to:
+  - preserve the mathematical_contract
+  - distinguish controls, parameters, random quantities, derived quantities, constraints, and reformulation-only auxiliaries
+  - identify the objective, original constraints, and dominant convexity/tractability status or technical difficulty
+  - understand any benchmark or surrogate only when the Phase 1 handoff explicitly requires one
+
+  Concision guidance:
+  - Do not target a fixed word count.
+  - Prefer a minimal, complete interface draft over a long explanatory draft.
+  - Avoid adding reformulation paths, benchmark details, intermediate variables, or implementation hints merely to make the section feel complete.
+  - If a later-phase item is useful but not part of the original optimization problem, place it only in core_theory_package_md and mark it as reformulation-only.
+
+  Before returning, verify internally:
+  1. Every optimizer variable is listed under controls.
+  2. No derived_quantity appears in the optimizer.
+  3. No reformulation_only symbol appears in system_model_md or problem_formulation_md.
+  4. Every objective term uses only controls, parameters, random quantities, and derived quantities defined in the contract.
+  5. Every constraint appears under constraints and uses canonical notation.
+  6. No equivalent reformulation, threshold substitution, or auxiliary-variable transformation appears in problem_formulation_md unless it is part of the original Phase 1 handoff.
+  7. The first-pass formulation already contains a closed research path: physical coupling, controllable variables, paper KPI, tractability seed, and experiment observable.

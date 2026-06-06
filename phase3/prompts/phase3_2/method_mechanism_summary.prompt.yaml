@@ -1,0 +1,21 @@
+phase_id: phase3.2
+slug: numerical_results
+name: method_mechanism_summary
+variables:
+  - method_names
+  - algorithm_summary
+  - benchmark_summary
+template: |
+  Method naming:
+  {method_names}
+
+  Core algorithm notes:
+  {algorithm_summary}
+
+  Core benchmark notes:
+  {benchmark_summary}
+
+  Mechanism emphasis:
+  - Describe the proposed method using the current algorithm notes only.
+  - Describe the main benchmark using the current benchmark notes only.
+  - The expected gain mechanism must be derived from the current problem variables, objective components, constraints, and benchmark limitation; do not import mechanisms from older topics.

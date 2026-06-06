@@ -1,0 +1,145 @@
+phase_id: phase3.6
+slug: final_revision
+name: final_revision_apply_review_fixes
+variables:
+  - paper_target
+  - current_sections_json
+  - revision_context_json
+output_schema:
+  required:
+    - abstract_tex
+    - introduction_tex
+    - system_model_problem_formulation_section_tex
+    - proposed_solution_section_tex
+    - numerical_results_section_tex
+    - conclusion_tex
+    - applied_issue_summaries
+    - revision_diff_summary_md
+template: |
+  You are performing phase3.6_final_revision_apply_review_fixes for a {paper_target} draft.
+
+  Task:
+  Return valid JSON only. Apply only targeted, evidence-preserving revisions based on the supplied review plan.
+  This is a final revision pass, not a paper rewrite pass.
+
+  Required top-level JSON keys:
+  - abstract_tex
+  - introduction_tex
+  - system_model_problem_formulation_section_tex
+  - proposed_solution_section_tex
+  - numerical_results_section_tex
+  - conclusion_tex
+  - applied_issue_summaries
+  - revision_diff_summary_md
+
+  Rules:
+  - Do not redesign the algorithm.
+  - Do not invent new experiments, new numerical results, or new references.
+  - Do not strengthen claims.
+  - Enforce full-paper acronym discipline while revising. The abstract and main body are separate acronym scopes: every remaining undefined acronym or abbreviation in each scope must be defined on first use as `full descriptive name (ABBR)` or removed; do not rely on a fixed acronym dictionary.
+  - Treat any frozen_math_contract_json in the revision context as a read-only original-problem interface.
+  - Do not rewrite, extend, or reinterpret the original optimizer, objective, constraints, canonical notation, channels, receiver classes, or physical KPIs.
+  - Reformulation-only variables from later phases must not be moved into, or left inside, the original System Model or Problem Formulation. If the review reports such leakage, remove the symbol from the original-problem prose and keep it only in the proposed-method reformulation.
+  - Only fix auto-fixable issues, prioritizing P0 and P1.
+  - If a problem requires a new experiment, proof, or manual reference verification, do not pretend to fix it.
+  - Keep section structure compatible with the existing assembly.
+  - Preserve labels, figure references, table references, citation keys, and numerical values.
+  - Preserve equations by default. However, if the supplied post-revision review explicitly says an existing equation is dimensionally inconsistent, internally contradictory, or mathematically ambiguous, you may repair that equation locally while keeping its existing label, objective/constraint role, physical mechanism, and variable semantics. Such a repair must not add a new optimizer variable, new physical channel, new constraint family, new citation, or new experiment.
+  - Preserve the verified reference coverage from revision_context_json.reference_preservation_contract. Do not remove or rewrite citations in a way that makes the final cited verified reference count fall below the supplied minimum target.
+  - Preserve or improve equation display formatting: one displayed equation should define only one mathematical quantity or relation, and each equation/align line may contain at most one primary equality or inequality relation.
+  - Do not combine multiple definitions with `\qquad` or chained forms such as `a=b=c`; split them into separate displayed equations if a reviewed equation needs formatting repair.
+  - Do not over-split compact single-relation equations. If a formula fits naturally in one IEEE column, prefer one `equation` environment instead of `align` with `\nonumber` continuation lines.
+  - Use `align` continuation lines only for genuinely long formulas that would otherwise overflow the two-column layout.
+  - Do not introduce any new figure labels, table labels, equation labels, bibliography keys, or algorithm environments.
+  - Do not rewrite the System Model or Proposed Solution sections broadly. They are normally preserved.
+  - Exception: if revision_context_json contains `post_revision_followup_contract` with unresolved technical/writing issues that explicitly name the System Model, Problem Formulation, Proposed Solution, assumptions, receiver model, algorithm reproducibility, or abbreviation failures, you may make narrowly scoped technical repairs in those sections.
+  - For this exception, preserve all labels, optimizer variables, objective/constraint roles, citation keys, and figure/table references. You may add derived notation, local surrogate equations, scoped modeling assumptions, receiver/interference assumptions, and compact algorithm-step prose if they use the existing physical model and do not change the original optimization goal.
+  - Never imply a physical path, channel, waveform, interference term, or controllable mechanism that is absent from the model. If a review issue says a claim is misaligned with equations, either weaken the claim to match the equations or locally repair the inconsistent equation when the issue is explicitly an equation-level dimensional/mathematical defect.
+  - Focus your edits on: abstract, introduction, numerical results wording, conclusion, citation wording consistency, and claim weakening.
+  - If a section already satisfies the review plan, keep it very close to the original instead of rewriting it.
+  - If a section is technically correct but reads like a workflow report, polish the prose into natural IEEE WCL style while preserving all equations, labels, citations, figure paths, method identities, and numerical facts.
+  - If a section is structurally valid but below IEEE letter writing quality, rewrite the prose more aggressively while preserving all technical facts. Do not preserve weak wording merely because it is not factually wrong.
+  - If the abstract or Introduction has weak narrative logic, revise the logic, not just the wording. A valid revision may reorder, merge, or split prose sentences as long as the citations, labels, contribution bullets, method identities, benchmark identities, numerical facts, and scoped claims remain grounded.
+  - Do not preserve a sentence solely because it is factually safe if it weakens the motivation-gap-contribution argument.
+  - Remove weak deictic opening-paragraph sentences such as "This letter studies this bottleneck ..." or "This paper studies this problem ...". Fold the exact system setting into the concrete gap or rewrite it as a grounded "In this letter, we ..." contribution transition.
+  - Do not convert the Introduction into a taxonomy of literatures during revision. Preserve a causal path from wireless-technology significance to concrete bottleneck to closest-work limitation to the paper's contribution.
+  - High-level IEEE style means: specific motivation, explicit gap, concrete contribution, mechanism-level results explanation, and scoped claims. It does not mean adding adjectives or stronger claims.
+  - For abstract and Introduction prose, follow the style of highly cited IEEE Wireless Communications Letters: open with why the technology matters to wireless communications, quickly narrow to the concrete bottleneck, use compact prior-work context, a direct "However" gap, and an "In this letter, we ..." contribution transition.
+  - Remove meta-structural phrases that sound like a workflow or taxonomy rather than a paper, including "technical axis", "first literature axis", "second literature axis", "A first thread", "A second thread", "first line of work", "second line of work", "missing capability", "current paper", and "exact current topic".
+  - Preserve paragraph breaks in the Introduction: separate the opening motivation/bottleneck paragraph, the closest-work-and-gap paragraph(s), the contribution paragraph with itemize, the organization paragraph, and the final notation paragraph.
+  - Do not leave a one-sentence motivation, related-work, or gap paragraph before the contribution list. If a related citation or gap sentence is too short to stand alone, merge it into the adjacent related-work/gap paragraph or expand it into a full argument paragraph with thesis, support, and transition.
+  - A short one-sentence paragraph is allowed only for the paper-organization paragraph or the final notation paragraph, not for pre-contribution argument flow.
+  - Remove report-like phrases such as "figure-driven", "evidence package", "the registry shows", "the plotted evidence", "paper-ready", and repetitive "It is observed that" templates.
+  - Prefer researcher-style interpretation: state the operating regime, the trend, the mechanism, and the implication in fluent prose.
+  - Use cautious wording such as:
+    - under the considered settings
+    - in the evaluated scenarios
+    - over the tested configurations
+  - Remove or weaken unsupported wording such as:
+    - proves
+    - guarantees
+    - globally optimal
+    - statistically significant
+    - always outperforms
+
+  Section-specific guidance:
+  - abstract_tex: tighten wording, fix acronym introduction, align claim strength with evidence.
+  - abbreviation review:
+    - revision_context_json contains abbreviation_review_contract with a dynamically extracted full-paper abbreviation report for this exact draft.
+    - Do not rely on a fixed list of known acronyms. For every undefined abbreviation in that report, infer the full form from the supplied paper context and define it on first prose use within the reported scope, or remove the acronym if the full form is not trustworthy.
+    - If the report flags an item with scope `main_body`, repair the first body occurrence, usually in the Introduction or the earliest technical section; do not move the body definition into the abstract.
+    - If the report flags repeated_abbreviation_definitions, keep only one full-name-plus-acronym definition within the reported scope. For benchmark items, prefer `\item \textbf{ACRONYM}: full descriptive name ...` over repeating `full descriptive name (ACRONYM)` in both the label and body.
+    - For compound wireless acronyms, define the whole compound acronym rather than nesting component definitions. For example, write `extremely large-scale multiple-input multiple-output (XL-MIMO)`, not `XL multiple-input multiple-output (MIMO)` or `XL multiple-input multiple-output (XL multiple-input multiple-output (MIMO))`.
+    - It is acceptable to use full-language phrases instead of acronyms in the abstract and conclusion.
+    - Preserve equations, labels, citation keys, figure paths, numerical values, and method identities while fixing abbreviation prose.
+  - abstract_tex and conclusion_tex must not contain inline mathematical notation, optimizer symbols, or equation variables. Use public-facing descriptions grounded in the current paper, such as "allocated radio resources", "beamforming or covariance design variables", "trajectory and scheduling decisions", or "transmit power" instead of symbols like `\(\{\mathbf{W}_k\}\)`, `\(\mathbf{V}\)`, or `\(P_{\rm tx}\)`.
+  - abstract_tex and conclusion_tex should prefer full-language phrases over letter tags. Avoid acronym labels when the full phrase is readable, e.g., use "signal-to-interference-plus-noise-ratio thresholds", "semidefinite programming", and "maximum-ratio-transmission benchmark" instead of "SINR", "SDP", or "MRT".
+  - introduction_tex: sharpen motivation/gap/contribution positioning using existing citations only.
+  - introduction_tex: when improving prose, keep enough verified citation keys to satisfy the reference_preservation_contract. Citation coverage is part of the paper argument, not disposable formatting.
+  - introduction_tex: if the current Introduction is generic, rewrite more aggressively while preserving citations and structure. The first paragraph must open with the technology's significance for wireless communications and then contain the concrete wireless bottleneck; the related-work paragraphs must identify the closest prior-work contexts without naming them as axes, and the gap must state the missing mechanism, assumption, or design consequence addressed by the letter.
+  - introduction_tex: the first paragraph should be general WCL-style background: research promise, practical value, and the main challenge. Do not use the first paragraph as a system-model setup sentence with topology, narrowband/single-cell assumptions, antenna geometry, user type, or exact constraint details.
+  - introduction_tex: remove ordinal category summaries such as "The first ... The second ..." and rewrite related work as natural thematic prose using the same verified citations.
+  - introduction_tex: before `\begin{itemize}`, every motivation, related-work, and gap paragraph must contain at least two sentences. The short "In this letter" lead-in may be concise, but no standalone "Related studies..." citation sentence should become its own paragraph.
+  - introduction_tex: the last contribution item may include a scoped qualitative evidence statement, e.g., "Numerical results indicate that ... under the considered settings." Do not add exact numerical values, percentages, win rates, median gains, feasibility rates, or universal superiority claims to the Introduction.
+  - introduction_tex must preserve the existing WCL Introduction structure unless the original section is structurally invalid:
+    - keep the itemized contribution list if the current introduction has one;
+    - keep the organization paragraph beginning "The remainder of this letter is organized as follows.";
+    - keep the final paragraph beginning "\textit{Notation:}";
+    - do not convert contribution bullets into a generic prose paragraph.
+  - numerical_results_section_tex: preserve all existing figures/tables/labels/numbers; only improve wording, insight, and claim strength.
+  - system_model_problem_formulation_section_tex and proposed_solution_section_tex:
+    - If the post-revision review reports a technical closure issue, repair it at the source rather than only softening claims.
+    - You may add compact local equations, surrogate definitions, domain/trust-region conditions, or lemma-style scope statements when they use only variables, constraints, labels, and mechanisms already present in the frozen contract/current manuscript.
+    - Preserve every existing formal problem block, equation block, algorithm block, label, and cross-reference unless the input itself is malformed. Do not replace equations or constraints with summary phrases such as "the remaining formulation is kept as in the manuscript".
+    - Prefer local insertion or local sentence replacement near the problematic definition over deleting and rewriting whole technical sections.
+    - Do not introduce a new physical mechanism, a new optimization variable outside the frozen contract, a new constraint family, a new experiment, or a new citation.
+    - For geometry/channel issues, make dimensions explicit and use one consistent distance convention throughout the prose and equations.
+    - For SCA/MM/BCD issues, state the active variables, frozen variables, surrogate objective/constraint, tightness condition, and convergence scope concisely enough to be solver-ready.
+  - numerical_results_section_tex must not delete any existing `\begin{figure}`, `\includegraphics`, `\caption`, `\label`, or `Fig.~\ref{...}` block from the input section.
+  - Benchmark/evidence alignment:
+    - Do not mention a benchmark, baseline, ablation, or method in the abstract, introduction, numerical-results prose, or conclusion unless it is actually included in the current final figure prose/itemize block.
+    - If earlier review notes mention extra methods that are not present in the final figures, treat them as audit-only or removed methods and do not reintroduce them.
+    - The benchmark set must remain consistent across high-level claims, benchmark definitions, figure discussion, and conclusion.
+    - Do not require the proposed method to dominate every plotted benchmark. If the evidence supports gain over one benchmark while another benchmark is competitive, preserve the competitive benchmark and scope high-level claims to the supported comparison or operating regime.
+  - conclusion_tex: align with evidence and avoid stronger claims than the numerical section, while keeping detailed notation out of the summary prose.
+  - If a technical issue requires a new theorem, counterpart derivation, experiment, or reference, record it as unresolved instead of disguising it with smoother prose.
+  - If post_revision_followup_contract is present, treat it as the highest-priority repair list for this pass. It is generated by the post-revision ReviewAgent from the exact current manuscript.
+  - For abbreviation failures, use the dynamic abbreviation report in revision_context_json. Define each flagged abbreviation at first prose use or remove the abbreviation. For compound method names, prefer full descriptive phrases in prose and reserve abbreviations only in benchmark item labels when already defined.
+  - Never repair a compound acronym by expanding only one component inside another acronym definition. If the full compound meaning is clear, use one definition for the whole term; otherwise remove the acronym.
+
+  Output requirements for applied_issue_summaries:
+  Return a list of objects, each containing:
+  - issue_id
+  - status
+  - file_or_section
+  - change_type
+  - original_issue_summary
+  - before_excerpt
+  - after_excerpt
+  - note
+
+  Current sections JSON:
+  {current_sections_json}
+
+  Revision context JSON:
+  {revision_context_json}
